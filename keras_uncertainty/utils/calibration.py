@@ -1,6 +1,6 @@
 # Utils to estimate uncertainty calibration
 
-from .metrics import accuracy
+from .numpy_metrics import accuracy
 
 import numpy as np
 from itertools import tee
