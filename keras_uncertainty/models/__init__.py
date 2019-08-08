@@ -1,3 +1,2 @@
 from .MCDropout import MCDropoutModel
 from .DeepEnsembleClassifier import DeepEnsembleClassifier
-from .DeepSubensemble import DeepSubensembleClassifier, DeepSubensembleRegressor
