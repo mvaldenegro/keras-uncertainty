@@ -1,2 +1,3 @@
 from .MCDropout import MCDropoutModel
 from .DeepEnsembleClassifier import DeepEnsembleClassifier
+from .DeepEnsembleRegressor import DeepEnsembleRegressor, deep_ensemble_regression_nll_loss
