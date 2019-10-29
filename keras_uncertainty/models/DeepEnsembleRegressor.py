@@ -1,3 +1,5 @@
+# Some implementation ideas taken from https://medium.com/@albertoarrigoni/paper-review-code-deep-ensembles-nips-2017-c5859070b8ce
+
 import numpy as np
 import keras
 
@@ -17,7 +19,8 @@ def deep_ensemble_regression_nll_loss(sigma_sq, epsilon = 1e-6):
 class DeepEnsembleRegressor:
     """
         Implementation of a Deep Ensemble for regression.
-        Uses two models
+        Uses two models, one for training and another for inference/testing. The user has to provide a model function that returns
+        the train and test models, and use the provided deep_ensemble_nll_loss for training.
     """
     def __init__(self, model_fn, num_estimators):
         """
