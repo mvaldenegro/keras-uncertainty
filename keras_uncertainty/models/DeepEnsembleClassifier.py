@@ -14,7 +14,7 @@ class DeepEnsembleClassifier:
         """
         self.model_fn = model_fn
         self.num_estimators = num_estimators
-        self.estimators = []
+        self.estimators = [None] * num_estimators 
 
     def fit(self, X, y, epochs=10, batch_size=32, **kwargs):
         """
@@ -23,7 +23,16 @@ class DeepEnsembleClassifier:
 
         for i in range(self.num_estimators):
             self.estimators[i] = self.model_fn()
-            self.estimators[i].fit(X, y, epochs=10, batch_size=batch_size, **kwargs)
+            self.estimators[i].fit(X, y, epochs=epochs, batch_size=batch_size, **kwargs)
+
+    def fit_generator(self, generator, epochs=10, **kwargs):
+        """
+            Fits the Deep Ensemble, each estimator is fit independently on the same data.
+        """
+
+        for i in range(self.num_estimators):
+            self.estimators[i] = self.model_fn()
+            self.estimators[i].fit_generator(generator, epochs=epochs, **kwargs)
 
     def predict(self, X, batch_size=32):
         """
@@ -33,10 +42,10 @@ class DeepEnsembleClassifier:
         predictions = []
 
         for estimator in self.estimators:
-            predictions.append(estimator.predict(X, batch_size=batch_size))
+            predictions.append(np.expand_dims(estimator.predict(X, batch_size=batch_size, verbose=0), axis=0))
 
-        predictions = np.array(predictions)
-        mean_pred = np.mean(predictions, axis=0)[0]
-        mean_pred = mean_pred / np.sum(mean_pred)
+        predictions = np.concatenate(predictions)
+        mean_pred = np.mean(predictions, axis=0)
+        mean_pred = mean_pred / np.sum(mean_pred, axis=1, keepdims=True)
         
         return mean_pred
