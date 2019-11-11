@@ -36,8 +36,6 @@ def classifier_calibration_error(y_pred, y_true, y_confidences, metric="mae", nu
             bin_acc = accuracy(filt_classes, filt_preds)
             bin_conf = np.mean(filt_confs)
 
-            print(bin_acc, bin_conf)
-
             error += abs(bin_conf - bin_acc)
 
     return error / num_bins
@@ -63,8 +61,6 @@ def classifier_calibration_curve(y_pred, y_true, y_confidences, metric="mae", nu
         if len(filt_confs) > 0:
             bin_acc = accuracy(filt_classes, filt_preds)
             bin_conf = np.mean(filt_confs)
-
-            print(bin_acc, bin_conf)
 
             curve_conf.append(bin_conf)
             curve_acc.append(bin_acc)
