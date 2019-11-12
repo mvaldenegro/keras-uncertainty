@@ -17,5 +17,11 @@ def numpy_negative_log_likelihood(y_true, y_pred):
 
     return -np.mean(np.sum(y_true * np.log(y_pred) + (1.0 - y_true) * np.log(1.0 - y_pred), axis=-1), axis=-1)
 
-def entropy(y_true, y_pred):
-    return 0
+def numpy_entropy(probs, axis=-1, eps=1e-6):
+    return -np.sum(probs * np.log(probs + eps), axis=axis)
+
+def mean_squared_error(y_true, y_pred):
+    return np.mean(np.square(y_true - y_pred))
+
+def mean_absolute_error(y_true, y_pred):
+    return np.mean(np.abs(y_true - y_pred))
