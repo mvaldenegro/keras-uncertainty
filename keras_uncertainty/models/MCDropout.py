@@ -38,7 +38,7 @@ class MCDropoutClassifier(MCDropoutModel):
             Performs a prediction given input inp using MC Dropout, and returns the averaged probabilities of model output.
         """
         samples = self.predict_samples(inp, num_samples)
-        mean_probs = np.mean(samples, axis=1)
+        mean_probs = np.mean(samples, axis=0)
         mean_probs = mean_probs / np.sum(mean_probs, axis=1, keepdims=True)
 
         return mean_probs
