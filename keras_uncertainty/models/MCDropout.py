@@ -53,9 +53,8 @@ class MCDropoutRegressor(MCDropoutModel):
         """
         samples = self.predict_samples(inp, num_samples)
 
-        samples = np.array(samples)
-        mean_pred = np.mean(samples, axis=0)[0]
-        std_pred = np.std(samples, axis=0)[0]
+        mean_pred = np.mean(samples, axis=0)
+        std_pred = np.std(samples, axis=0)
 
         return mean_pred, std_pred    
 
