@@ -8,6 +8,19 @@ that indicates how trustworthy is the prediction, which can be integrated into t
 Typical research in machine learning applications (Computer Vision, NLP, etc) usually does not consider ways to produce well behaved
 uncertainty estimates, and machine learning methods can be used to extract or include uncertainty information into the model.
 
+## Installation
+
+Clone this repository:
+
+`git clone git@github.com:mvaldenegro/keras-uncertainty.git`
+
+Then install using setuptools:
+
+```
+cd keras-uncertainty
+python3 setup.py install --user
+```
+
 ## Features
 
 - Entropy and Negative Log-Likelihood metrics.
