@@ -10,13 +10,10 @@ uncertainty estimates, and machine learning methods can be used to extract or in
 
 ## Installation
 
-Clone this repository:
-
-`git clone git@github.com:mvaldenegro/keras-uncertainty.git`
-
-Then install using setuptools:
+Clone this repository and then install using setuptools:
 
 ```
+git clone git@github.com:mvaldenegro/keras-uncertainty.git
 cd keras-uncertainty
 python3 setup.py install --user
 ```
