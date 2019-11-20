@@ -8,6 +8,8 @@ that indicates how trustworthy is the prediction, which can be integrated into t
 Typical research in machine learning applications (Computer Vision, NLP, etc) usually does not consider ways to produce well behaved
 uncertainty estimates, and machine learning methods can be used to extract or include uncertainty information into the model.
 
+![Regression example](https://raw.githubusercontent.com/mvaldenegro/keras-uncertainty/master/examples/deepensemble-x-pow-3.png)
+
 ## Installation
 
 Clone this repository and then install using setuptools:
