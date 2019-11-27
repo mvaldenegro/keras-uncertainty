@@ -1,5 +1,7 @@
 # Some implementation ideas taken from https://medium.com/@albertoarrigoni/paper-review-code-deep-ensembles-nips-2017-c5859070b8ce
 
+from .DeepEnsembleClassifier import DeepEnsemble
+
 import numpy as np
 import keras
 
@@ -16,13 +18,13 @@ def deep_ensemble_regression_nll_loss(sigma_sq, epsilon = 1e-6):
 
     return nll_loss
 
-class DeepEnsembleRegressor:
+class DeepEnsembleRegressor(DeepEnsemble):
     """
         Implementation of a Deep Ensemble for regression.
         Uses two models, one for training and another for inference/testing. The user has to provide a model function that returns
         the train and test models, and use the provided deep_ensemble_nll_loss for training.
     """
-    def __init__(self, model_fn, num_estimators):
+    def __init__(self, model_fn=None, num_estimators=None, models=None):
         """
             Builds a Deep Ensemble given a function to make model instances, and the number of estimators.
 
@@ -30,10 +32,8 @@ class DeepEnsembleRegressor:
             For testing, a model that shares weights with the training model is used, but the testing model outputs both mean and variance. The final
             prediction is made with a mixture of gaussians, where each gaussian is one trained model instance.
         """
-        self.model_fn = model_fn
-        self.num_estimators = num_estimators
-        self.train_estimators = [None] * num_estimators
-        self.test_estimators = [None] * num_estimators
+        super().__init__(model_fn=model_fn, num_estimators=num_estimators, models=models,
+                         needs_test_estimators=True)
 
     def fit(self, X, y, epochs=10, batch_size=32, **kwargs):
         """
@@ -41,19 +41,15 @@ class DeepEnsembleRegressor:
         """
 
         for i in range(self.num_estimators):
-            models = self.model_fn()
+            self.train_estimators[i].fit(X, y, epochs=epochs, batch_size=batch_size, **kwargs)
+    
+    def fit_generator(self, generator, epochs=10, **kwargs):
+        """
+            Fits the Deep Ensemble, each estimator is fit independently on the same data.
+        """
 
-            if type(models) is not tuple:
-                raise ValueError("model_fn should return a tuple")
-
-            if len(models) is not 2:
-                raise ValueError("model_fn returned a tuple of unexpected size ({} vs 2)".format(len(models)))
-
-            train_model, test_model = models
-            train_model.fit(X, y, epochs=epochs, batch_size=batch_size, **kwargs)
-
-            self.train_estimators[i] = train_model
-            self.test_estimators[i] = test_model
+        for i in range(self.num_estimators):
+            self.train_estimators[i].fit_generator(generator, epochs=epochs, **kwargs)
             
 
     def predict(self, X, batch_size=32):
