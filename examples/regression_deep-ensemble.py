@@ -45,6 +45,8 @@ if __name__ == "__main__":
     model = DeepEnsembleRegressor(mlp_model, 5)
     model.fit(x_train, y_train, epochs=200)
 
+    model.save("regression-ens")
+
     y_pred_mean, y_pred_std = model.predict(x_test)
     y_pred_mean = y_pred_mean.reshape((-1,))
     y_pred_std = y_pred_std.reshape((-1,))
@@ -61,7 +63,7 @@ if __name__ == "__main__":
     y_pred_down_3 = y_pred_mean - 3.0 * y_pred_std
     
     plt.plot(x_test, y_test, '.', color=(0, 0.9, 0.0, 0.8), markersize=12, label="Ground truth Points")
-    plt.plot(x_test, x_test ** 3, color='red', label="Ground truth x**3")
+    plt.plot(x_test, x_test ** 3, color='red', label="Ground truth 4x**3")
 
     plt.fill_between(x_test, y_pred_down_3, y_pred_up_3, color=(0, 0, 0.9, 0.2), label="Three Sigma Confidence Interval")
     plt.fill_between(x_test, y_pred_down_2, y_pred_up_2, color=(0, 0, 0.9, 0.5), label="Two Sigma Confidence Interval")
