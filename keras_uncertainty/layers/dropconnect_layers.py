@@ -46,6 +46,28 @@ class DropConnectDense(DropConnect, Dense):
 
         return dict(list(config_dc.items()) + list(config_base.items()))
 
+class DropConnectConv1D(DropConnect, Conv1D):
+    def __init__(self, *args, **kwargs):        
+        DropConnect.__init__(self, **kwargs)
+        Conv1D.__init__(self, *args, **kwargs)
+
+        if self.needs_drop:
+            self.uses_learning_phase = True
+
+    def build(self, input_shape):
+        Conv1D.build(self, input_shape)
+
+        if self.needs_drop:
+            self.kernel = K.in_train_phase(K.dropout(self.kernel, self.prob, self.drop_noise_shape), self.kernel)
+
+            if self.drop_bias:
+                self.bias = K.in_train_phase(K.dropout(self.bias, self.prob, self.drop_noise_shape), self.bias)
+
+    def get_config(self):
+        config_dc = DropConnect.get_config(self)
+        config_base = Conv1D.get_config(self)
+
+        return dict(list(config_dc.items()) + list(config_base.items()))
 
 class DropConnectConv2D(DropConnect, Conv2D):
     def __init__(self, *args, **kwargs):        
@@ -67,5 +89,28 @@ class DropConnectConv2D(DropConnect, Conv2D):
     def get_config(self):
         config_dc = DropConnect.get_config(self)
         config_base = Conv2D.get_config(self)
+
+        return dict(list(config_dc.items()) + list(config_base.items()))
+
+class DropConnectConv3D(DropConnect, Conv3D):
+    def __init__(self, *args, **kwargs):        
+        DropConnect.__init__(self, **kwargs)
+        Conv3D.__init__(self, *args, **kwargs)
+
+        if self.needs_drop:
+            self.uses_learning_phase = True
+
+    def build(self, input_shape):
+        Conv3D.build(self, input_shape)
+
+        if self.needs_drop:
+            self.kernel = K.in_train_phase(K.dropout(self.kernel, self.prob, self.drop_noise_shape), self.kernel)
+
+            if self.drop_bias:
+                self.bias = K.in_train_phase(K.dropout(self.bias, self.prob, self.drop_noise_shape), self.bias)
+
+    def get_config(self):
+        config_dc = DropConnect.get_config(self)
+        config_base = Conv3D.get_config(self)
 
         return dict(list(config_dc.items()) + list(config_base.items()))
