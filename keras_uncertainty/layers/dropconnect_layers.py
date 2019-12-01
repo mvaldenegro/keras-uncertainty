@@ -31,23 +31,14 @@ class DropConnectDense(DropConnect, Dense):
         if self.needs_drop:
             self.uses_learning_phase = True
 
-    def call(self, x, mask=None):
+    def build(self, input_shape):
+        Dense.build(self, input_shape)
+
         if self.needs_drop:
-            self.kernel = K.in_train_phase(K.dropout(self.kernel, self.prob), self.kernel)
+            self.kernel = K.in_train_phase(K.dropout(self.kernel, self.prob, self.drop_noise_shape), self.kernel)
 
             if self.drop_bias:
-                self.bias = K.in_train_phase(K.dropout(self.bias, self.prob), self.bias)
-
-        # Same as original
-        output = K.dot(x, self.kernel)
-
-        if self.use_bias:
-            output = K.bias_add(output, self.bias, data_format='channels_last')
-
-        if self.activation is not None:
-            output = self.activation(output)
-            
-        return output
+                self.bias = K.in_train_phase(K.dropout(self.bias, self.prob, self.drop_noise_shape), self.bias)
 
     def get_config(self):
         config_dc = DropConnect.get_config(self)
@@ -64,31 +55,14 @@ class DropConnectConv2D(DropConnect, Conv2D):
         if self.needs_drop:
             self.uses_learning_phase = True
 
-    def call(self, inputs):
+    def build(self, input_shape):
+        Conv2D.build(self, input_shape)
+
         if self.needs_drop:
             self.kernel = K.in_train_phase(K.dropout(self.kernel, self.prob, self.drop_noise_shape), self.kernel)
 
             if self.drop_bias:
                 self.bias = K.in_train_phase(K.dropout(self.bias, self.prob, self.drop_noise_shape), self.bias)
-
-        outputs = K.conv2d(
-                inputs,
-                self.kernel,
-                strides=self.strides,
-                padding=self.padding,
-                data_format=self.data_format,
-                dilation_rate=self.dilation_rate)
-        
-        if self.use_bias:
-            outputs = K.bias_add(
-                outputs,
-                self.bias,
-                data_format=self.data_format)
-
-        if self.activation is not None:
-            return self.activation(outputs)
-
-        return outputs
 
     def get_config(self):
         config_dc = DropConnect.get_config(self)
