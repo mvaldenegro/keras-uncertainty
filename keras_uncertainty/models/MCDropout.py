@@ -2,6 +2,17 @@ import numpy as np
 import keras
 import keras.backend as K
 
+# To make batches from array or iterable, reference https://stackoverflow.com/a/8290508/349130
+def predict_batches(predict_fn, iterable, batch_size):
+    l = len(iterable)
+    output = [None] * l
+
+    for ndx in range(0, l, batch_size):
+        inp = iterable[ndx:min(ndx + batch_size, l)]
+        output[ndx:min(ndx + batch_size, l)] = predict_fn(inp)[0]
+
+    return output
+
 class MCDropoutModel:
     """
         Monte Carlo Dropout implementation over a keras model.
@@ -17,15 +28,20 @@ class MCDropoutModel:
                                   [model.layers[-1].output])
         self.mc_pred = lambda x: self.mc_func([x, 1])
     
-    def predict_samples(self, x, num_samples=10):
+    def predict_samples(self, x, num_samples=10, batch_size=32):
         """
             Performs a prediction using MC Dropout, and returns the produced output samples from the model.
         """
 
-        samples = [None] * num_samples
+        assert num_samples > 0
 
+        if num_samples == 1:
+            return self.mc_pred(x)
+
+        samples = [None] * num_samples
+        
         for i in range(num_samples):
-            samples[i] = self.mc_pred(x)[0]
+            samples[i] = predict_batches(self.mc_pred, x, batch_size=batch_size)
 
         return np.array(samples)
 
