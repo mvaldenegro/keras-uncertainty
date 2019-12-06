@@ -38,8 +38,8 @@ class DeepEnsemble:
                     self.test_estimators[i] = test_est
                 else:
                     est = model_fn()
-                    self.train_estimators = est
-                    self.test_estimators = est
+                    self.train_estimators[i] = est
+                    self.test_estimators[i] = est
 
         else:
             assert model_fn is None and num_estimators is None
@@ -118,7 +118,7 @@ class DeepEnsembleClassifier(DeepEnsemble):
         """
 
         for i in range(self.num_estimators):
-            self.train_estimators.fit_generator(generator, epochs=epochs, **kwargs)
+            self.train_estimators[i].fit_generator(generator, epochs=epochs, **kwargs)
 
     def predict(self, X, batch_size=32):
         """
