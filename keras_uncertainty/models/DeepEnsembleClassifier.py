@@ -19,9 +19,7 @@ class DeepEnsemble:
             assert model_fn is not None and num_estimators is not None
             self.num_estimators = num_estimators
             self.train_estimators = [None] * num_estimators 
-
-            if self.needs_test_estimators:
-                self.test_estimators = [None] * num_estimators
+            self.test_estimators = [None] * num_estimators
 
             for i in range(self.num_estimators):
                 if self.needs_test_estimators:
@@ -39,6 +37,7 @@ class DeepEnsemble:
                 else:
                     est = model_fn()
                     self.train_estimators[i] = est
+                    self.test_estimators[i] = est
 
         else:
             assert model_fn is None and num_estimators is None
