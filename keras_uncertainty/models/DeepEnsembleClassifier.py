@@ -39,7 +39,6 @@ class DeepEnsemble:
                 else:
                     est = model_fn()
                     self.train_estimators[i] = est
-                    self.test_estimators[i] = est
 
         else:
             assert model_fn is None and num_estimators is None
