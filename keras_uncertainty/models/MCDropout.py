@@ -35,9 +35,6 @@ class MCDropoutModel:
 
         assert num_samples > 0
 
-        if num_samples == 1:
-            return self.mc_pred(x)
-
         samples = [None] * num_samples
         
         for i in range(num_samples):
