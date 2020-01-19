@@ -1,3 +1,6 @@
 from .MCDropout import MCDropoutClassifier, MCDropoutRegressor
 from .DeepEnsembleClassifier import DeepEnsembleClassifier
 from .DeepEnsembleRegressor import DeepEnsembleRegressor, deep_ensemble_regression_nll_loss
+
+from .DeepSubEnsembleClassifier import DeepSubEnsembleClassifier
+from .DeepSubEnsembleRegressor import DeepSubEnsembleRegressor
