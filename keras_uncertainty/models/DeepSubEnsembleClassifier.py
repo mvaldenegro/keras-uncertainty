@@ -95,8 +95,24 @@ class DeepSubEnsembleClassifier(DeepSubEnsemble):
         
         return mean_pred
 
-    def predict_generator(self, generator, steps, **kwargs):
+    def predict_generator(self, generator, steps=None, **kwargs):
+        """
+            Makes a prediction. Predictions from each estimator are averaged and probabilities normalized.
+        """
         
+        predictions = []
+
+        trunk_pred = self.trunk_network.predict_generator(generator, steps=steps, **kwargs)
+
+        for task_network in self.test_task_networks:
+            task_pred = task_network.predict(trunk_pred, **kwargs)
+            predictions.append(np.expand_dims(task_pred, axis=0))
+
+        predictions = np.concatenate(predictions)
+        mean_pred = np.mean(predictions, axis=0)
+        mean_pred = mean_pred / np.sum(mean_pred, axis=1, keepdims=True)
+        
+        return mean_pred
 
     def fit(self, X, y, epochs=10, batch_size=32, **kwargs):
         """
