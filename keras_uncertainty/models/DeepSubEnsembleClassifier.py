@@ -19,29 +19,14 @@ class DeepSubEnsemble:
 
             self.trunk_network = trunk_network_fn()
             self.train_task_networks = [None] * num_estimators 
-            self.test_task_networks = [None] * num_estimators
+            self.test_task_networks = [None] * num_estimators            
 
             if self.needs_test_estimators:
-                self.train_variance_var = [None] * num_estimators
-
-            for i in range(self.num_estimators):
-                if self.needs_test_estimators:
-                    estimators = task_network_fn()
-
-                    if type(estimators) is not tuple:
-                        raise ValueError("task_network_fn should return a tuple")
-
-                    if len(estimators) != 2:
-                        raise ValueError("task_network_fn returned a tuple of unexpected size ({} vs 2)".format(len(estimators)))
-
-                    train_tsk, variance_var = estimators
-                    self.train_task_networks[i] = train_tsk
-                    #self.test_task_networks[i] = test_tsk
-                    self.train_variance_var[i] = variance_var
-                else:
-                    est = task_network_fn()
-                    self.train_task_networks[i] = est
-                    self.test_task_networks[i] = est
+                self.task_network_fn = task_network_fn
+            else:
+                est = task_network_fn()
+                self.train_task_networks[i] = est
+                self.test_task_networks[i] = est
 
         else:
             assert trunk_network_fn is None and task_network_fn is None and num_estimators is None
@@ -54,7 +39,7 @@ class DeepSubEnsemble:
             self.num_estimators = len(task_models)
 
     @staticmethod
-    def combine_trunk_task(trunk_model, task_model):
+    def combine_trunk_task_classification(trunk_model, task_model):
         inp =  Input(trunk_model.input_shape[1:])
         x = trunk_model(inp)
         out = task_model(x)
@@ -115,7 +100,7 @@ class DeepSubEnsembleClassifier(DeepSubEnsemble):
         """
 
         # First fit the trunk and one task network:
-        trunk_task = self.combine_trunk_task(self.trunk_network, self.train_task_networks[0])
+        trunk_task = self.combine_trunk_task_classification(self.trunk_network, self.train_task_networks[0])
         trunk_task.compile(loss=self.loss, optimizer=self.optimizer, metrics=self.metrics)
 
         trunk_task.fit(X, y, epochs=epochs, batch_size=batch_size, **kwargs)
@@ -127,7 +112,7 @@ class DeepSubEnsembleClassifier(DeepSubEnsemble):
         # Then train the remaining task networks
         for i in range(1, self.num_estimators):
 
-            trunk_task = self.combine_trunk_task(self.trunk_network, self.train_task_networks[i])
+            trunk_task = self.combine_trunk_task_classification(self.trunk_network, self.train_task_networks[i])
             trunk_task.compile(loss=self.loss, optimizer=self.optimizer, metrics=self.metrics)
 
             trunk_task.fit(X, y, epochs=epochs, batch_size=batch_size, **kwargs)
