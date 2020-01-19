@@ -17,6 +17,8 @@ class DeepEnsemble:
 
         if models is None:
             assert model_fn is not None and num_estimators is not None
+            assert num_estimators > 0
+            
             self.num_estimators = num_estimators
             self.train_estimators = [None] * num_estimators 
             self.test_estimators = [None] * num_estimators
@@ -28,8 +30,8 @@ class DeepEnsemble:
                     if type(estimators) is not tuple:
                         raise ValueError("model_fn should return a tuple")
 
-                    if len(estimators) is not 2:
-                        raise ValueError("model_fn returned a tuple of unexpected size ({} vs 2)".format(len(models)))
+                    if len(estimators) != 2:
+                        raise ValueError("model_fn returned a tuple of unexpected size ({} vs 2)".format(len(estimators)))
 
                     train_est, test_est = estimators
                     self.train_estimators[i] = train_est
