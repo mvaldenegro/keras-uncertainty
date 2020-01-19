@@ -24,9 +24,10 @@ class DeepSubEnsemble:
             if self.needs_test_estimators:
                 self.task_network_fn = task_network_fn
             else:
-                est = task_network_fn()
-                self.train_task_networks[i] = est
-                self.test_task_networks[i] = est
+                for i in range(self.num_estimators):
+                    est = task_network_fn()
+                    self.train_task_networks[i] = est
+                    self.test_task_networks[i] = est
 
         else:
             assert trunk_network_fn is None and task_network_fn is None and num_estimators is None
@@ -93,6 +94,9 @@ class DeepSubEnsembleClassifier(DeepSubEnsemble):
         mean_pred = mean_pred / np.sum(mean_pred, axis=1, keepdims=True)
         
         return mean_pred
+
+    def predict_generator(self, generator, steps, **kwargs):
+        
 
     def fit(self, X, y, epochs=10, batch_size=32, **kwargs):
         """
