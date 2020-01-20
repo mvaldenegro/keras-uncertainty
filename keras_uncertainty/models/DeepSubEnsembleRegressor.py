@@ -11,7 +11,7 @@ from .DeepSubEnsembleClassifier import DeepSubEnsemble
 
 class DeepSubEnsembleRegressor(DeepSubEnsemble):
     def __init__(self, trunk_network_fn=None, task_network_fn=None, num_estimators=None,
-                 trunk_model=None, task_models=None, needs_test_estimators=False):
+                 trunk_model=None, task_models=None):
 
         super().__init__(trunk_network_fn=trunk_network_fn, task_network_fn=task_network_fn, num_estimators=num_estimators,
                          trunk_model=trunk_model, task_models=task_models, needs_test_estimators=True)
