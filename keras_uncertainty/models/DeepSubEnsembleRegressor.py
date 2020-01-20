@@ -40,6 +40,30 @@ class DeepSubEnsembleRegressor(DeepSubEnsemble):
                 
         return mixture_mean, np.sqrt(mixture_var)
 
+    def predict_generator(self, generator, steps=None, **kwargs):
+        """
+            Makes a prediction. Predictions from each estimator are used to build a gaussian mixture and its mean and standard deviation returned.
+        """
+        
+        means = []
+        variances = []
+
+        trunk_pred = self.trunk_network.predict_generator(generator, steps=steps, **kwargs)
+
+        for task_network in self.test_task_networks:
+            mean, var  = task_network.predict(trunk_pred, batch_size=batch_size, **kwargs)
+            means.append(mean)
+            variances.append(var)
+
+        means = np.array(means)
+        variances = np.array(variances)
+        
+        mixture_mean = np.mean(means, axis=0)
+        mixture_var  = np.mean(variances + np.square(means), axis=0) - np.square(mixture_mean)
+        mixture_var[mixture_var < 0.0] = 0.0
+                
+        return mixture_mean, np.sqrt(mixture_var)
+
     def combine_trunk_task_regression(self):        
         trunk_inp = self.trunk_network.input
         test_task_network = self.task_network_fn()
