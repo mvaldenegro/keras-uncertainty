@@ -135,3 +135,19 @@ class DeepEnsembleClassifier(DeepEnsemble):
         mean_pred = mean_pred / np.sum(mean_pred, axis=1, keepdims=True)
         
         return mean_pred
+
+    def predict_generator(self, generator, steps=None, **kwargs):
+        """
+            Makes a prediction. Predictions from each estimator are averaged and probabilities normalized.
+        """
+        
+        predictions = []
+
+        for estimator in self.train_estimators:
+            predictions.append(np.expand_dims(estimator.predict_generator(generator, steps=steps, **kwargs), axis=0))
+
+        predictions = np.concatenate(predictions)
+        mean_pred = np.mean(predictions, axis=0)
+        mean_pred = mean_pred / np.sum(mean_pred, axis=1, keepdims=True)
+        
+        return mean_pred

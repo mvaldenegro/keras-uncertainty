@@ -73,3 +73,25 @@ class DeepEnsembleRegressor(DeepEnsemble):
         mixture_var[mixture_var < 0.0] = 0.0
                 
         return mixture_mean, np.sqrt(mixture_var)
+
+    def predict_generator(self, generator, steps=None, **kwargs):
+        """
+            Makes a prediction. Predictions from each estimator are used to build a gaussian mixture and its mean and standard deviation returned.
+        """
+        
+        means = []
+        variances = []
+
+        for estimator in self.test_estimators:
+            mean, var  = estimator.predict_generator(generator, steps=steps, **kwargs)
+            means.append(mean)
+            variances.append(var)
+
+        means = np.array(means)
+        variances = np.array(variances)
+        
+        mixture_mean = np.mean(means, axis=0)
+        mixture_var  = np.mean(variances + np.square(means), axis=0) - np.square(mixture_mean)
+        mixture_var[mixture_var < 0.0] = 0.0
+                
+        return mixture_mean, np.sqrt(mixture_var)
