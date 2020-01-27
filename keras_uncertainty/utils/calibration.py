@@ -16,13 +16,13 @@ def pairwise(iterable):
 
 def validate_calibration_data(y_pred, y_true, y_confidences):
     if len(y_true.shape) > 2:
-        raise ValueError("y_true should be a 2D array, found shape {}".format(y_true.shape))1
+        raise ValueError("y_true should be a 2D array, found shape {}".format(y_true.shape))
 
     if len(y_true.shape) == 2 and y_true.shape[1] == 1:
         y_true = y_true.flatten()
 
     if len(y_pred.shape) > 2:
-        raise ValueError("y_true should be a 2D array, found shape {}".format(y_true.shape))1
+        raise ValueError("y_true should be a 2D array, found shape {}".format(y_true.shape))
 
     if len(y_pred.shape) == 2 and y_pred.shape[1] == 1:
         y_pred = y_pred.flatten()
@@ -58,7 +58,7 @@ def classifier_calibration_error(y_pred, y_true, y_confidences, metric="mae", nu
 
             error = abs(bin_conf - bin_acc)
             weight = len(filt_confs)
-            
+
             errors.append(error)            
             weights.append(weight)
 
