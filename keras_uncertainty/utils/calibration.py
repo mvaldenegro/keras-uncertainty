@@ -33,7 +33,7 @@ def validate_calibration_data(y_pred, y_true, y_confidences):
     return y_pred, y_true, y_confidences
     
 
-def classifier_calibration_error(y_pred, y_true, y_confidences, metric="mae", num_bins=10):
+def classifier_calibration_error(y_pred, y_true, y_confidences, metric="mae", num_bins=10, weighted=False):
     """
         Estimates calibration error for a classifier.
         y_pred are the class predictions of the model (integers), while y_true is the ground truth labels (integers),
@@ -43,7 +43,8 @@ def classifier_calibration_error(y_pred, y_true, y_confidences, metric="mae", nu
 
     bin_edges = np.linspace(0.0, 1.0 + EPSILON, num_bins)
 
-    error = 0
+    errors = []
+    weights = []
 
     for start, end in pairwise(bin_edges):
         indices = np.where(np.logical_and(y_confidences >= start, y_confidences < end))
@@ -55,9 +56,19 @@ def classifier_calibration_error(y_pred, y_true, y_confidences, metric="mae", nu
             bin_acc = accuracy(filt_classes, filt_preds)
             bin_conf = np.mean(filt_confs)
 
-            error += abs(bin_conf - bin_acc)
+            error = abs(bin_conf - bin_acc)
+            weight = len(filt_confs)
+            
+            errors.append(error)            
+            weights.append(weight)
 
-    return error / num_bins
+    errors = np.array(errors)
+    weights = np.array(weights) / sum(weights)
+
+    if weighted:
+        return sum(errors * weights)
+
+    return np.mean(errors)
 
 def classifier_calibration_curve(y_pred, y_true, y_confidences, metric="mae", num_bins=10):
     """
