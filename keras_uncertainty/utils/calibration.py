@@ -41,7 +41,7 @@ def classifier_calibration_error(y_pred, y_true, y_confidences, metric="mae", nu
         All three arrays must have equal number of samples.
     """
 
-    bin_edges = np.linspace(0.0, 1.0 + EPSILON, num_bins)
+    bin_edges = np.linspace(0.0, 1.0 + EPSILON, num_bins + 1)
 
     errors = []
     weights = []
