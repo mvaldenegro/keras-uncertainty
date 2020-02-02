@@ -4,10 +4,10 @@ from keras.layers import Dense, Conv1D, Conv2D, Conv3D
 import keras.backend as K
 
 class DropConnect:
-    def __init__(self, **kwargs):
-        self.prob = kwargs.pop('prob', 0.5)
-        self.drop_bias = kwargs.pop("drop_bias", False)
-        self.drop_noise_shape = kwargs.pop("drop_noise_shape", None)
+    def __init__(self, prob=0.5, drop_bias=False, drop_noise_shape=None):
+        self.prob = prob
+        self.drop_bias = drop_bias
+        self.drop_noise_shape = drop_noise_shape
 
     @property
     def needs_drop(self):
@@ -24,9 +24,9 @@ class DropConnect:
 
 
 class DropConnectDense(DropConnect, Dense):
-    def __init__(self, *args, **kwargs):        
-        DropConnect.__init__(self, **kwargs)
-        Dense.__init__(self, *args, **kwargs)
+    def __init__(self, units, prob=0.5, drop_bias=False, drop_noise_shape=None, **kwargs):        
+        DropConnect.__init__(self, prob=prob, drop_bias=drop_bias, drop_noise_shape=drop_noise_shape)
+        Dense.__init__(self, units, **kwargs)
 
         if self.needs_drop:
             self.uses_learning_phase = True
@@ -47,9 +47,9 @@ class DropConnectDense(DropConnect, Dense):
         return dict(list(config_dc.items()) + list(config_base.items()))
 
 class DropConnectConv1D(DropConnect, Conv1D):
-    def __init__(self, *args, **kwargs):        
-        DropConnect.__init__(self, **kwargs)
-        Conv1D.__init__(self, *args, **kwargs)
+    def __init__(self, filters, kernel_size, prob=0.5, drop_bias=False, drop_noise_shape=None, **kwargs):        
+        DropConnect.__init__(self, prob=prob, drop_bias=drop_bias, drop_noise_shape=drop_noise_shape)
+        Conv1D.__init__(self, filters, kernel_size, **kwargs)
 
         if self.needs_drop:
             self.uses_learning_phase = True
@@ -70,9 +70,9 @@ class DropConnectConv1D(DropConnect, Conv1D):
         return dict(list(config_dc.items()) + list(config_base.items()))
 
 class DropConnectConv2D(DropConnect, Conv2D):
-    def __init__(self, *args, **kwargs):        
-        DropConnect.__init__(self, **kwargs)
-        Conv2D.__init__(self, *args, **kwargs)
+    def __init__(self, filters, kernel_size, prob=0.5, drop_bias=False, drop_noise_shape=None, **kwargs):        
+        DropConnect.__init__(self, prob=prob, drop_bias=drop_bias, drop_noise_shape=drop_noise_shape)
+        Conv2D.__init__(self, filters, kernel_size, **kwargs)
 
         if self.needs_drop:
             self.uses_learning_phase = True
@@ -93,9 +93,9 @@ class DropConnectConv2D(DropConnect, Conv2D):
         return dict(list(config_dc.items()) + list(config_base.items()))
 
 class DropConnectConv3D(DropConnect, Conv3D):
-    def __init__(self, *args, **kwargs):        
-        DropConnect.__init__(self, **kwargs)
-        Conv3D.__init__(self, *args, **kwargs)
+    def __init__(self, filters, kernel_size, prob=0.5, drop_bias=False, drop_noise_shape=None, **kwargs):
+        DropConnect.__init__(self, prob=prob, drop_bias=drop_bias, drop_noise_shape=drop_noise_shape)
+        Conv3D.__init__(self, filters, kernel_size, **kwargs)
 
         if self.needs_drop:
             self.uses_learning_phase = True
