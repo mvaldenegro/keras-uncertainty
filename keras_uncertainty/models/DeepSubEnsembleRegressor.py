@@ -16,17 +16,22 @@ class DeepSubEnsembleRegressor(DeepSubEnsemble):
         super().__init__(trunk_network_fn=trunk_network_fn, task_network_fn=task_network_fn, num_estimators=num_estimators,
                          trunk_model=trunk_model, task_models=task_models, needs_test_estimators=True)
     
-    def predict(self, X, batch_size=32, **kwargs):
+    def predict(self, X, batch_size=32, num_ensembles=None, **kwargs):
         """
             Makes a prediction. Predictions from each estimator are used to build a gaussian mixture and its mean and standard deviation returned.
         """
         
         means = []
-        variances = []
+        variances = []        
 
         trunk_pred = self.trunk_network.predict(X, batch_size=batch_size, **kwargs)
 
-        for task_network in self.test_task_networks:
+        if num_ensembles is None:
+            task_networks = self.test_task_networks
+        else:
+            task_networks = self.test_task_networks[:num_ensembles]
+
+        for task_network in task_networks:
             mean, var  = task_network.predict(trunk_pred, batch_size=batch_size, **kwargs)
             means.append(mean)
             variances.append(var)
@@ -40,7 +45,7 @@ class DeepSubEnsembleRegressor(DeepSubEnsemble):
                 
         return mixture_mean, np.sqrt(mixture_var)
 
-    def predict_generator(self, generator, steps=None, **kwargs):
+    def predict_generator(self, generator, steps=None, num_ensembles=None, **kwargs):
         """
             Makes a prediction. Predictions from each estimator are used to build a gaussian mixture and its mean and standard deviation returned.
         """
@@ -50,7 +55,12 @@ class DeepSubEnsembleRegressor(DeepSubEnsemble):
 
         trunk_pred = self.trunk_network.predict_generator(generator, steps=steps, **kwargs)
 
-        for task_network in self.test_task_networks:
+        if num_ensembles is None:
+            task_networks = self.test_task_networks
+        else:
+            task_networks = self.test_task_networks[:num_ensembles]
+
+        for task_network in task_networks:
             mean, var  = task_network.predict(trunk_pred, batch_size=batch_size, **kwargs)
             means.append(mean)
             variances.append(var)

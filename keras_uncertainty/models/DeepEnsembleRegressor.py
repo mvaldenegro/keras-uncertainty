@@ -52,7 +52,7 @@ class DeepEnsembleRegressor(DeepEnsemble):
             self.train_estimators[i].fit_generator(generator, epochs=epochs, **kwargs)
             
 
-    def predict(self, X, batch_size=32):
+    def predict(self, X, batch_size=32, num_ensembles=None):
         """
             Makes a prediction. Predictions from each estimator are used to build a gaussian mixture and its mean and standard deviation returned.
         """
@@ -60,7 +60,12 @@ class DeepEnsembleRegressor(DeepEnsemble):
         means = []
         variances = []
 
-        for estimator in self.test_estimators:
+        if num_ensembles is None:
+            estimators = self.test_estimators
+        else:
+            estimators = self.test_estimators[:num_ensembles]
+
+        for estimator in estimators:
             mean, var  = estimator.predict(X, batch_size=batch_size)
             means.append(mean)
             variances.append(var)
@@ -74,7 +79,7 @@ class DeepEnsembleRegressor(DeepEnsemble):
                 
         return mixture_mean, np.sqrt(mixture_var)
 
-    def predict_generator(self, generator, steps=None, **kwargs):
+    def predict_generator(self, generator, steps=None, num_ensembles=None, **kwargs):
         """
             Makes a prediction. Predictions from each estimator are used to build a gaussian mixture and its mean and standard deviation returned.
         """
@@ -82,7 +87,12 @@ class DeepEnsembleRegressor(DeepEnsemble):
         means = []
         variances = []
 
-        for estimator in self.test_estimators:
+        if num_ensembles is None:
+            estimators = self.test_estimators
+        else:
+            estimators = self.test_estimators[:num_ensembles]
+
+        for estimator in estimators:
             mean, var  = estimator.predict_generator(generator, steps=steps, **kwargs)
             means.append(mean)
             variances.append(var)

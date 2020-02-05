@@ -76,7 +76,7 @@ class DeepSubEnsembleClassifier(DeepSubEnsemble):
         super().__init__(trunk_network_fn=trunk_network_fn, task_network_fn=task_network_fn, num_estimators=num_estimators,
                          trunk_model=trunk_model, task_models=task_models, needs_test_estimators=False)
 
-    def predict(self, X, batch_size=32, **kwargs):
+    def predict(self, X, batch_size=32, num_ensembles=None, **kwargs):
         """
             Makes a prediction. Predictions from each estimator are averaged and probabilities normalized.
         """
@@ -85,7 +85,12 @@ class DeepSubEnsembleClassifier(DeepSubEnsemble):
 
         trunk_pred = self.trunk_network.predict(X, batch_size=batch_size, **kwargs)
 
-        for task_network in self.test_task_networks:
+        if num_ensembles is None:
+            task_networks = self.test_task_networks
+        else:
+            task_networks = self.test_task_networks[:num_ensembles]
+
+        for task_network in task_networks:
             task_pred = task_network.predict(trunk_pred, batch_size=batch_size, **kwargs)
             predictions.append(np.expand_dims(task_pred, axis=0))
 
@@ -95,7 +100,7 @@ class DeepSubEnsembleClassifier(DeepSubEnsemble):
         
         return mean_pred
 
-    def predict_generator(self, generator, steps=None, **kwargs):
+    def predict_generator(self, generator, steps=None, num_ensembles=None, **kwargs):
         """
             Makes a prediction. Predictions from each estimator are averaged and probabilities normalized.
         """
@@ -104,7 +109,12 @@ class DeepSubEnsembleClassifier(DeepSubEnsemble):
 
         trunk_pred = self.trunk_network.predict_generator(generator, steps=steps, **kwargs)
 
-        for task_network in self.test_task_networks:
+        if num_ensembles is None:
+            task_networks = self.test_task_networks
+        else:
+            task_networks = self.test_task_networks[:num_ensembles]
+
+        for task_network in task_networks:
             task_pred = task_network.predict(trunk_pred, **kwargs)
             predictions.append(np.expand_dims(task_pred, axis=0))
 
