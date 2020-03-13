@@ -103,3 +103,21 @@ def classifier_calibration_curve(y_pred, y_true, y_confidences, metric="mae", nu
 
 def regressor_calibration_curve(y_pred, y_true, y_confidences):
     return None
+
+def classifier_accuracy_confidence_curve(y_pred, y_true, y_confidences, num_points=20):
+    candidate_confs = np.linspace(0.0, 0.99, num=num_points)
+
+    out_confidences = []
+    out_accuracy = []
+
+    for confidence in candidate_confs:
+        examples_idx = np.where(y_confidences >= confidence)
+        filt_preds = y_pred[examples_idx]
+        filt_true = y_true[examples_idx]
+
+        acc = accuracy(filt_true, filt_preds)
+
+        out_confidences.append(confidence)
+        out_accuracy.append(acc)
+
+    return out_confidences, out_accuracy
