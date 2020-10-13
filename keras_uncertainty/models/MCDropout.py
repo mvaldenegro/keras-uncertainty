@@ -15,7 +15,7 @@ def predict_batches(predict_fn, iterable, batch_size):
 
 class MCDropoutModel:
     """
-        Monte Carlo Dropout implementation over a keras model.
+        Monte Carlo Dropout/DropConnect implementation over a keras model.
         This class just wraps a keras model to enable dropout at inference time.
     """
     def __init__(self, model):
@@ -46,11 +46,11 @@ class MCDropoutClassifier(MCDropoutModel):
     def __init__(self, model):
         super().__init__(model)
 
-    def predict(self, inp, num_samples=10):
+    def predict(self, inp, num_samples=10, batch_size=32):
         """
             Performs a prediction given input inp using MC Dropout, and returns the averaged probabilities of model output.
         """
-        samples = self.predict_samples(inp, num_samples)
+        samples = self.predict_samples(inp, num_samples, batch_size=batch_size)
         mean_probs = np.mean(samples, axis=0)
         mean_probs = mean_probs / np.sum(mean_probs, axis=1, keepdims=True)
 
@@ -60,11 +60,11 @@ class MCDropoutRegressor(MCDropoutModel):
     def __init__(self, model):
         super().__init__(model)
 
-    def predict(self, inp, num_samples=10):
+    def predict(self, inp, num_samples=10, batch_size=32):
         """
             Performs a prediction  given input inp using MC Dropout, and returns the mean and standard deviation of the model output.
         """
-        samples = self.predict_samples(inp, num_samples)
+        samples = self.predict_samples(inp, num_samples, batch_size=batch_size)
 
         mean_pred = np.mean(samples, axis=0)
         std_pred = np.std(samples, axis=0)
