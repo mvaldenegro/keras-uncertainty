@@ -60,11 +60,14 @@ class MCDropoutRegressor(MCDropoutModel):
     def __init__(self, model):
         super().__init__(model)
 
-    def predict(self, inp, num_samples=10, batch_size=32):
+    def predict(self, inp, num_samples=10, batch_size=32, output_scaler=None):
         """
             Performs a prediction  given input inp using MC Dropout, and returns the mean and standard deviation of the model output.
         """
         samples = self.predict_samples(inp, num_samples, batch_size=batch_size)
+
+        if output_scaler is not None:
+            samples = list(map(lambda x: output_scaler.inverse_transform(x), samples))
 
         mean_pred = np.mean(samples, axis=0)
         std_pred = np.std(samples, axis=0)

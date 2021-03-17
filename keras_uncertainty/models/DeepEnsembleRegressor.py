@@ -52,7 +52,7 @@ class DeepEnsembleRegressor(DeepEnsemble):
             self.train_estimators[i].fit_generator(generator, epochs=epochs, **kwargs)
             
 
-    def predict(self, X, batch_size=32, num_ensembles=None):
+    def predict(self, X, batch_size=32, output_scaler=None, num_ensembles=None):
         """
             Makes a prediction. Predictions from each estimator are used to build a gaussian mixture and its mean and standard deviation returned.
         """
@@ -67,6 +67,16 @@ class DeepEnsembleRegressor(DeepEnsemble):
 
         for estimator in estimators:
             mean, var  = estimator.predict(X, batch_size=batch_size)
+
+            if output_scaler is not None:
+                mean = output_scaler.inverse_transform(mean)
+
+                # This should work but not sure if its 100% correct
+                # Its not clear how to do inverse scaling of the variance
+                sqrt_var = np.sqrt(var)
+                var = output_scaler.inverse_transform(sqrt_var)
+                var = np.square(var)
+
             means.append(mean)
             variances.append(var)
 
