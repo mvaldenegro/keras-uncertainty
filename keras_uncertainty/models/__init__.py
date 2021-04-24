@@ -4,3 +4,5 @@ from .DeepEnsembleRegressor import DeepEnsembleRegressor, deep_ensemble_regressi
 
 from .DeepSubEnsembleClassifier import DeepSubEnsembleClassifier
 from .DeepSubEnsembleRegressor import DeepSubEnsembleRegressor
+
+from .SimpleEnsemble import SimpleEnsemble

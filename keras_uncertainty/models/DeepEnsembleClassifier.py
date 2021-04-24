@@ -120,7 +120,7 @@ class DeepEnsembleClassifier(DeepEnsemble):
         for i in range(self.num_estimators):
             self.train_estimators[i].fit_generator(generator, epochs=epochs, **kwargs)
 
-    def predict(self, X, batch_size=32, num_ensembles=None, **kwargs):
+    def predict(self, X, batch_size=32, num_ensembles=None, return_std = False, **kwargs):
         """
             Makes a prediction. Predictions from each estimator are averaged and probabilities normalized.
         """
@@ -130,7 +130,7 @@ class DeepEnsembleClassifier(DeepEnsemble):
         if num_ensembles is None:
             estimators = self.test_estimators
         else:
-            estimators = self.train_estimators[:num_ensembles]
+            estimators = self.test_estimators[:num_ensembles]
 
         for estimator in estimators:
             predictions.append(np.expand_dims(estimator.predict(X, batch_size=batch_size, verbose=0, **kwargs), axis=0))
@@ -139,6 +139,11 @@ class DeepEnsembleClassifier(DeepEnsemble):
         mean_pred = np.mean(predictions, axis=0)
         mean_pred = mean_pred / np.sum(mean_pred, axis=1, keepdims=True)
         
+        if return_std:
+            std_pred = np.std(predictions, axis=0)
+
+            return mean_pred, std_pred
+
         return mean_pred
 
     def predict_generator(self, generator, steps=None, num_ensembles=None, **kwargs):
@@ -151,7 +156,7 @@ class DeepEnsembleClassifier(DeepEnsemble):
         if num_ensembles is None:
             estimators = self.test_estimators
         else:
-            estimators = self.train_estimators[:num_ensembles]
+            estimators = self.test_estimators[:num_ensembles]
 
         for estimator in estimators:
             predictions.append(np.expand_dims(estimator.predict_generator(generator, steps=steps, **kwargs), axis=0))
