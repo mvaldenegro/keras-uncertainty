@@ -88,8 +88,8 @@ class DeepEnsembleRegressor(DeepEnsemble):
         mixture_var[mixture_var < 0.0] = 0.0
                 
         if disentangle_uncertainty:
-            epi_var = np.var(means)
-            ale_var = np.mean(variances)
+            epi_var = np.var(means, axis=0)
+            ale_var = np.mean(variances, axis=0)
 
             return mixture_mean, np.sqrt(ale_var), np.sqrt(epi_var)
 
