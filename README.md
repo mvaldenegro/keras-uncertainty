@@ -12,21 +12,21 @@ uncertainty estimates, and machine learning methods can be used to extract or in
 
 ## Installation
 
-Clone this repository and then install using setuptools:
+You can easily install with pip, using the following command:
 
 ```
-git clone https://github.com/mvaldenegro/keras-uncertainty.git
-cd keras-uncertainty
-python3 setup.py install --user
+pip install --user git+https://github.com/mvaldenegro/keras-uncertainty.git
 ```
 
 ## Features
 
 - Entropy and Negative Log-Likelihood metrics.
 - Calibration plots for classification.
+- Accuracy vs Confidence plot for classification.
 
 ## Current Implementations
 
 - Monte Carlo Dropout (MC-Dropout)
+- Monte Carlo DropConnect (MC-DropConnect)
 - Deep Ensembles
-
+- DUQ (Upcoming).
