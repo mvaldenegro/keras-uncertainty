@@ -16,7 +16,12 @@ AGGREGATION_FNS = {
 class GradientClassificationConfidence:
     """
         Implementation of gradient uncertainty for classifiers.
-        Reference: 
+
+        It only needs to provide a model, an aggregation function (to transform gradient to a scalar),
+        and optionally a loss to compute the gradient from.
+        Reference: Oberdiek et al. Classification Uncertainty of Deep Neural Networks
+                   Based on Gradient Information. 2018. https://arxiv.org/abs/1805.08440
+
     """
     def __init__(self, model, num_classes=None, aggregation="l2_norm", loss=None):
         self.model = model
