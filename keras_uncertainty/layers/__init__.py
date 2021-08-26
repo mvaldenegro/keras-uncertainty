@@ -1,1 +1,3 @@
 from .dropconnect_layers import DropConnectDense, DropConnectConv2D
+from .rbf_layers import RBFClassifier, add_gradient_penalty
+from .bayes_backprop_layers import BayesByBackpropDense
