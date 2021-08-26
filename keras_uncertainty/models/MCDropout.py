@@ -2,16 +2,7 @@ import numpy as np
 import keras
 import keras.backend as K
 
-# To make batches from array or iterable, reference https://stackoverflow.com/a/8290508/349130
-def predict_batches(predict_fn, iterable, batch_size):
-    l = len(iterable)
-    output = [None] * l
-
-    for ndx in range(0, l, batch_size):
-        inp = iterable[ndx:min(ndx + batch_size, l)]
-        output[ndx:min(ndx + batch_size, l)] = predict_fn(inp)[0]
-
-    return output
+from keras_uncertainty.utils import predict_batches
 
 class MCDropoutModel:
     """
