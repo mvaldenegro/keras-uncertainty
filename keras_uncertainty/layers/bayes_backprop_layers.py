@@ -4,7 +4,6 @@ import keras
 import keras.backend as K
 from keras.layers import Layer
 from keras import activations, initializers, regularizers, constraints
-from keras.engine import InputSpec
 
 from keras_uncertainty.distributions import gaussian
 
