@@ -15,12 +15,14 @@ class BayesByBackpropDense(Layer):
                  units,
                  kl_weight,
                  activation=None,
+                 prior=True,
                  prior_sigma_1=1.5,
                  prior_sigma_2=0.1,
                  prior_pi=0.5, **kwargs):
         self.units = units
         self.kl_weight = kl_weight
         self.activation = activations.get(activation)
+        self.prior = prior
         self.prior_sigma_1 = prior_sigma_1
         self.prior_sigma_2 = prior_sigma_2
         self.prior_pi_1 = prior_pi
@@ -68,7 +70,7 @@ class BayesByBackpropDense(Layer):
         return self.activation(K.dot(inputs, kernel) + bias)
 
     def kl_loss(self, w, mu, sigma):
-        return self.kl_weight * K.sum(gaussian.log_probability(w, mu, sigma) - self.log_prior_prob(w))
+        return self.kl_weight * K.sum(gaussian.log_probability(w, mu, sigma) - self.prior * self.log_prior_prob(w))
 
     def log_prior_prob(self, w):
         return K.log(self.prior_pi_1 * gaussian.probability(w, 0.0, self.prior_sigma_1) +
