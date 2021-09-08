@@ -80,6 +80,7 @@ class BayesByBackpropDense(Layer):
                   'kl_weight': self.kl_weight,
                   'activation': self.activation.__name__,
                   #'bias': self.bias,
+                  'prior': self.prior,
                   'prior_sigma_1': self.prior_sigma_1,
                   'prior_sigma_2': self.prior_sigma_2,
                   'prior_pi_1': self.prior_pi_1}
