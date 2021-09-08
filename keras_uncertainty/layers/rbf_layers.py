@@ -5,6 +5,47 @@ import keras.backend as K
 from keras.layers import Layer
 
 import tensorflow as tf
+from tqdm import trange
+import math
+
+# To make batches from array or iterable, reference https://stackoverflow.com/a/8290508/349130
+def make_batches(iter_x, iter_y, batch_size=32):
+    l = len(iter_x)
+ 
+    for ndx in range(0, l, batch_size):
+        x = iter_x[ndx:min(ndx + batch_size, l)]
+        y = iter_y[ndx:min(ndx + batch_size, l)]
+        
+        yield x, y
+
+def find_rbf_layer(model):
+    rbf_layers = []
+
+    for layer in model.layers:
+        if type(layer) is RBFClassifier:
+            rbf_layers.append(layer)
+
+    if len(rbf_layers) == 1:
+        return rbf_layers[0]
+    
+    raise ValueError("Multiple RBF layers detected, current training loop assumes only one RBF layer, cannot proceed. You can use your own custom training loop")
+
+def duq_training_loop(model, input_feature_model, x_train, y_train, epochs=10, batch_size=32, validation_data=None, penalty_type="two-sided", lambda_coeff=0.5):
+    rbf_layer = find_rbf_layer(model)
+    num_batches = math.ceil(x_train.shape[0] / batch_size)
+    
+    for epoch in range(epochs):
+        t = trange(num_batches, desc='Epoch {} / {}'.format(epoch, epochs))
+
+        for i, (x_batch_train, y_batch_train) in zip(t, make_batches(x_train, y_train)):
+            loss_metrics = model.train_on_batch(x_batch_train, y_batch_train)
+            metric_names = model.metrics_names
+            x_batch_rbf = input_feature_model.predict(x_batch_train)
+            rbf_layer.update_centroids(x_batch_rbf, y_batch_train)
+            
+            desc = " ".join(["{}: {:.3f}".format(name, value) for name, value in zip(metric_names, loss_metrics)])
+            t.set_description('Epoch {} / {} -'.format(epoch, epochs) + desc)
+            t.refresh()
 
 def add_gradient_penalty(model, lambda_coeff=0.5, penalty_type="two-sided"):
     term = K.gradients(K.sum(model.output, axis=1), model.input)

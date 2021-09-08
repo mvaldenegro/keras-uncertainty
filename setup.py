@@ -18,6 +18,6 @@ setup(name='Keras-Uncertainty',
       url='https://github.com/mvaldenegro/keras-uncertainty',
       download_url='https://github.com/mvaldenegro/keras-uncertainty/releases',
       license='LGPLv3',
-      install_requires=['keras>=2.2.0', 'numpy'],
+      install_requires=['keras>=2.2.0', 'numpy', 'tqdm'],
       packages=find_packages()
      )
