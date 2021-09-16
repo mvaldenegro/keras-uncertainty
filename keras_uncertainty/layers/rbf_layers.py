@@ -33,9 +33,12 @@ def find_rbf_layer(model):
 def duq_training_loop(model, input_feature_model, x_train, y_train, epochs=10, batch_size=32, validation_data=None, penalty_type="two-sided", lambda_coeff=0.5):
     rbf_layer = find_rbf_layer(model)
     num_batches = math.ceil(x_train.shape[0] / batch_size)
+    factor = 0.5
     
     for epoch in range(epochs):
         t = trange(num_batches, desc='Epoch {} / {}'.format(epoch, epochs))
+
+        running_sums = None
 
         for i, (x_batch_train, y_batch_train) in zip(t, make_batches(x_train, y_train)):
             loss_metrics = model.train_on_batch(x_batch_train, y_batch_train)
@@ -43,9 +46,22 @@ def duq_training_loop(model, input_feature_model, x_train, y_train, epochs=10, b
             x_batch_rbf = input_feature_model.predict(x_batch_train)
             rbf_layer.update_centroids(x_batch_rbf, y_batch_train)
             
-            desc = " ".join(["{}: {:.3f}".format(name, value) for name, value in zip(metric_names, loss_metrics)])
-            t.set_description('Epoch {} / {} -'.format(epoch, epochs) + desc)
+            if running_sums is None:
+                running_sums = loss_metrics
+            else:
+                for i in range(len(running_sums)):
+                    running_sums[i] = (1.0 - factor) * running_sums[i] + factor * loss_metrics[i]
+
+            desc = " ".join(["{}: {:.3f}".format(name, value) for name, value in zip(metric_names, running_sums)])
+            t.set_description('Epoch {} / {} - '.format(epoch, epochs) + desc)
             t.refresh()
+
+        if validation_data is not None:
+            x_val, y_val = validation_data
+            val_loss_metrics = model.evaluate(x_val, y_val, batch_size=batch_size, verbose=0)
+
+            desc = " ".join(["{}: {:.3f}".format(name, value) for name, value in zip(metric_names, val_loss_metrics)])
+            print("Validation metrics: {}".format(desc))
 
 def add_gradient_penalty(model, lambda_coeff=0.5, penalty_type="two-sided"):
     term = K.gradients(K.sum(model.output, axis=1), model.input)
