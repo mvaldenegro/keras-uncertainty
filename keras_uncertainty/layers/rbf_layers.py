@@ -38,21 +38,25 @@ def duq_training_loop(model, input_feature_model, x_train, y_train, epochs=10, b
     for epoch in range(epochs):
         t = trange(num_batches, desc='Epoch {} / {}'.format(epoch, epochs))
 
-        running_sums = None
+        metric_loss_values = {}
+        metric_names = model.metrics_names
+
+        for metric_name in metric_names:
+            metric_loss_values[metric_name] = []
 
         for i, (x_batch_train, y_batch_train) in zip(t, make_batches(x_train, y_train)):
             loss_metrics = model.train_on_batch(x_batch_train, y_batch_train)
-            metric_names = model.metrics_names
+            
             x_batch_rbf = input_feature_model.predict(x_batch_train)
             rbf_layer.update_centroids(x_batch_rbf, y_batch_train)
-            
-            if running_sums is None:
-                running_sums = loss_metrics
-            else:
-                for i in range(len(running_sums)):
-                    running_sums[i] = (1.0 - factor) * running_sums[i] + factor * loss_metrics[i]
 
-            desc = " ".join(["{}: {:.3f}".format(name, value) for name, value in zip(metric_names, running_sums)])
+            metric_means = []
+
+            for name, value in zip(metric_names, loss_metrics):
+                metric_loss_values[name].append(value)
+                metric_means.append(np.mean(metric_loss_values[name]))
+ 
+            desc = " ".join(["{}: {:.3f}".format(name, value) for name, value in zip(metric_names, metric_means)])
             t.set_description('Epoch {} / {} - '.format(epoch, epochs) + desc)
             t.refresh()
 
