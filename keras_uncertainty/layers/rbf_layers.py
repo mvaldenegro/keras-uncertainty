@@ -58,7 +58,7 @@ def duq_training_loop(model, input_feature_model, x_train, y_train, epochs=10, b
                 metric_means.append(np.mean(metric_loss_values[name]))
  
             desc = " ".join(["{}: {:.3f}".format(name, value) for name, value in zip(metric_names, metric_means)])
-            t.set_description('Epoch {} / {} - '.format(epoch, epochs) + desc)
+            t.set_description('Epoch {} / {} - '.format(epoch + 1, epochs) + desc)
             t.refresh()
 
         if validation_data is not None:
