@@ -3,6 +3,7 @@ import numpy as np
 import keras
 import keras.backend as K
 from keras.layers import Layer
+from keras.regularizers import l2
 
 import tensorflow as tf
 from tqdm import trange
@@ -82,6 +83,11 @@ def add_gradient_penalty(model, lambda_coeff=0.5, penalty_type="two-sided"):
     penalty = K.in_train_phase(penalty, K.zeros(shape=(1,)))
 
     model.add_loss(penalty)
+
+def add_l2_regularization(model, l2_strength=1e-4):
+    for layer in model.layers:
+        for tw in layer.trainable_weights:
+            model.add_loss(l2(l2_strength)(tw))
 
 class RBFClassifier(Layer):
     """
