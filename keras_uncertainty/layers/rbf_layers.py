@@ -97,7 +97,8 @@ class RBFClassifier(Layer):
             Amersfoort et al. ICML 2020.
 
     """
-    def __init__(self, num_classes, length_scale, centroid_dims=2, kernel_initializer="he_normal", gamma=0.99, trainable_centroids=False, **kwargs):
+    def __init__(self, num_classes, length_scale, centroid_dims=2, kernel_initializer="he_normal", centroids_initializer="uniform",
+                 gamma=0.99, trainable_centroids=False, **kwargs):
         Layer.__init__(self, **kwargs)        
         self.num_classes = num_classes
         self.centroid_dims = centroid_dims
@@ -106,11 +107,12 @@ class RBFClassifier(Layer):
         self.trainable_centroids = trainable_centroids
 
         self.kernel_initializer = kernel_initializer
+        self.centroids_initializer = centroids_initializer
 
     def build(self, input_shape):
         in_features = input_shape[-1]
 
-        centroid_init = self.kernel_initializer if self.trainable_centroids else "zeros"
+        centroid_init = self.centroids_initializer if self.trainable_centroids else "zeros"
 
         self.centroids = self.add_weight(name="centroids", shape=(self.centroid_dims, self.num_classes), dtype="float32", trainable=self.trainable_centroids, initializer=centroid_init)
         self.kernels = self.add_weight(name="kernels", shape=(self.centroid_dims, self.num_classes, in_features), initializer=self.kernel_initializer)
