@@ -14,7 +14,7 @@ class StochasticModel:
         self.model = model
         self.num_samples = num_samples
     
-    def predict_samples(self, x, num_samples=None, batch_size=32):
+    def predict_samples(self, x, num_samples=None, batch_size=32, **kwargs):
         """
             Performs num_samples predictions using the model, and returns the produced output samples.
         """
@@ -26,8 +26,11 @@ class StochasticModel:
 
         samples = [None] * num_samples
 
+        if "verbose" not in kwargs:
+            kwargs["verbose"] = 0
+
         for i in range(num_samples):
-            samples[i] = self.model.predict(x, batch_size=1, verbose=0)
+            samples[i] = self.model.predict(x, batch_size=1, **kwargs)
 
         return np.array(samples)
 
@@ -35,11 +38,11 @@ class StochasticClassifier(StochasticModel):
     def __init__(self, model, num_samples=10):
         super().__init__(model, num_samples)
 
-    def predict(self, inp, num_samples=None, batch_size=32):
+    def predict(self, inp, num_samples=None, batch_size=32, **kwargs):
         """
             Performs a prediction given input inp using MC Dropout, and returns the averaged probabilities of model output.
         """
-        samples = self.predict_samples(inp, num_samples, batch_size=batch_size)
+        samples = self.predict_samples(inp, num_samples, batch_size=batch_size, **kwargs)
         mean_probs = np.mean(samples, axis=0)
         mean_probs = mean_probs / np.sum(mean_probs, axis=1, keepdims=True)
 
@@ -49,11 +52,11 @@ class  StochasticRegressor(StochasticModel):
     def __init__(self, model, num_samples=10):
         super().__init__(model, num_samples)
 
-    def predict(self, inp, num_samples=None, batch_size=32, output_scaler=None):
+    def predict(self, inp, num_samples=None, batch_size=32, output_scaler=None, **kwargs):
         """
             Performs a prediction  given input inp using MC Dropout, and returns the mean and standard deviation of the model output.
         """
-        samples = self.predict_samples(inp, num_samples, batch_size=batch_size)
+        samples = self.predict_samples(inp, num_samples, batch_size=batch_size, **kwargs)
 
         if output_scaler is not None:
             samples = list(map(lambda x: output_scaler.inverse_transform(x), samples))
