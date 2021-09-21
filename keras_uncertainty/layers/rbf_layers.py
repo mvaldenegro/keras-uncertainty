@@ -93,6 +93,9 @@ class RBFClassifier(Layer):
     """
         Implementation of direct uncertainty quantification (DUQ)
         Reference: 
+            Uncertainty Estimation Using a Single Deep Deterministic Neural Network
+            Amersfoort et al. ICML 2020.
+
     """
     def __init__(self, num_classes, length_scale, centroid_dims=2, kernel_initializer="he_normal", gamma=0.99, trainable_centroids=False, **kwargs):
         Layer.__init__(self, **kwargs)        
