@@ -69,7 +69,7 @@ class BayesByBackpropDense(Layer):
         return self.activation(K.dot(inputs, kernel) + bias)
 
     def kl_loss(self, w, mu, sigma):
-        return self.kl_weight * K.sum(gaussian.log_probability(w, mu, sigma) - self.prior * self.log_prior_prob(w))
+        return self.kl_weight * K.mean(gaussian.log_probability(w, mu, sigma) - self.prior * self.log_prior_prob(w))
 
     def log_prior_prob(self, w):
         return K.log(self.prior_pi_1 * gaussian.probability(w, 0.0, self.prior_sigma_1) +
