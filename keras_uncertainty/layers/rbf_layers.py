@@ -31,7 +31,7 @@ def find_rbf_layer(model):
     
     raise ValueError("Multiple RBF layers detected, current training loop assumes only one RBF layer, cannot proceed. You can use your own custom training loop")
 
-def duq_training_loop(model, input_feature_model, x_train, y_train, epochs=10, batch_size=32, validation_data=None, penalty_type="two-sided", lambda_coeff=0.5):
+def duq_training_loop(model, input_feature_model, x_train, y_train, epochs=10, batch_size=32, validation_data=None, penalty_type="two-sided", lambda_coeff=0.5, callbacks=None):
     rbf_layer = find_rbf_layer(model)
     num_batches = math.ceil(x_train.shape[0] / batch_size)
     factor = 0.5
@@ -94,19 +94,22 @@ class RBFClassifier(Layer):
         Implementation of direct uncertainty quantification (DUQ)
         Reference: 
     """
-    def __init__(self, num_classes, length_scale, centroid_dims=2, kernel_initializer="he_normal", gamma=0.99, **kwargs):
+    def __init__(self, num_classes, length_scale, centroid_dims=2, kernel_initializer="he_normal", gamma=0.99, trainable_centroids=False, **kwargs):
         Layer.__init__(self, **kwargs)        
         self.num_classes = num_classes
         self.centroid_dims = centroid_dims
         self.length_scale = length_scale
         self.gamma = gamma
+        self.trainable_centroids = trainable_centroids
 
         self.kernel_initializer = kernel_initializer
 
     def build(self, input_shape):
         in_features = input_shape[-1]
 
-        self.centroids = self.add_weight(name="centroids", shape=(self.centroid_dims, self.num_classes), dtype="float32", trainable=False, initializer="zeros")
+        centroid_init = self.kernel_initializer if self.trainable_centroids else "zeros"
+
+        self.centroids = self.add_weight(name="centroids", shape=(self.centroid_dims, self.num_classes), dtype="float32", trainable=self.trainable_centroids, initializer=centroid_init)
         self.kernels = self.add_weight(name="kernels", shape=(self.centroid_dims, self.num_classes, in_features), initializer=self.kernel_initializer)
 
         self.m = np.zeros(shape=(self.centroid_dims, self.num_classes))
