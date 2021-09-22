@@ -19,7 +19,7 @@ class MCDropoutModel:
                                   [model.layers[-1].output])
         self.mc_pred = lambda x: self.mc_func([x, 1])
     
-    def predict_samples(self, x, num_samples=10, batch_size=32):
+    def predict_samples(self, x, num_samples=10, batch_size=32, **kwargs):
         """
             Performs a prediction using MC Dropout, and returns the produced output samples from the model.
         """
@@ -37,11 +37,11 @@ class MCDropoutClassifier(MCDropoutModel):
     def __init__(self, model):
         super().__init__(model)
 
-    def predict(self, inp, num_samples=10, batch_size=32):
+    def predict(self, inp, num_samples=10, batch_size=32, **kwargs):
         """
             Performs a prediction given input inp using MC Dropout, and returns the averaged probabilities of model output.
         """
-        samples = self.predict_samples(inp, num_samples, batch_size=batch_size)
+        samples = self.predict_samples(inp, num_samples, batch_size=batch_size, **kwargs)
         mean_probs = np.mean(samples, axis=0)
         mean_probs = mean_probs / np.sum(mean_probs, axis=1, keepdims=True)
 
@@ -51,11 +51,11 @@ class MCDropoutRegressor(MCDropoutModel):
     def __init__(self, model):
         super().__init__(model)
 
-    def predict(self, inp, num_samples=10, batch_size=32, output_scaler=None):
+    def predict(self, inp, num_samples=10, batch_size=32, output_scaler=None, **kwargs):
         """
             Performs a prediction  given input inp using MC Dropout, and returns the mean and standard deviation of the model output.
         """
-        samples = self.predict_samples(inp, num_samples, batch_size=batch_size)
+        samples = self.predict_samples(inp, num_samples, batch_size=batch_size, **kwargs)
 
         if output_scaler is not None:
             samples = list(map(lambda x: output_scaler.inverse_transform(x), samples))
