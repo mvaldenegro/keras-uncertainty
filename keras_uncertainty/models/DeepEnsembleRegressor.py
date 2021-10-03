@@ -52,7 +52,7 @@ class DeepEnsembleRegressor(DeepEnsemble):
             self.train_estimators[i].fit_generator(generator, epochs=epochs, **kwargs)
             
 
-    def predict(self, X, batch_size=32, output_scaler=None, num_ensembles=None, disentangle_uncertainty=False):
+    def predict(self, X, batch_size=32, output_scaler=None, num_ensembles=None, disentangle_uncertainty=False, **kwargs):
         """
             Makes a prediction. Predictions from each estimator are used to build a gaussian mixture and its mean and standard deviation returned.
         """
@@ -65,8 +65,11 @@ class DeepEnsembleRegressor(DeepEnsemble):
         else:
             estimators = self.test_estimators[:num_ensembles]
 
+        if "verbose" not in kwargs:
+            kwargs["verbose"] = 0
+
         for estimator in estimators:
-            mean, var  = estimator.predict(X, batch_size=batch_size)
+            mean, var  = estimator.predict(X, batch_size=batch_size, **kwargs)
 
             if output_scaler is not None:
                 mean = output_scaler.inverse_transform(mean)

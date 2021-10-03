@@ -132,8 +132,11 @@ class DeepEnsembleClassifier(DeepEnsemble):
         else:
             estimators = self.test_estimators[:num_ensembles]
 
+        if "verbose" not in kwargs:
+            kwargs["verbose"] = 0
+
         for estimator in estimators:
-            predictions.append(np.expand_dims(estimator.predict(X, batch_size=batch_size, verbose=0, **kwargs), axis=0))
+            predictions.append(np.expand_dims(estimator.predict(X, batch_size=batch_size, **kwargs), axis=0))
 
         predictions = np.concatenate(predictions)
         mean_pred = np.mean(predictions, axis=0)
@@ -166,3 +169,4 @@ class DeepEnsembleClassifier(DeepEnsemble):
         mean_pred = mean_pred / np.sum(mean_pred, axis=1, keepdims=True)
         
         return mean_pred
+
