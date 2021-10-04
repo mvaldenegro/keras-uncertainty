@@ -40,7 +40,7 @@ class GradientClassificationConfidence:
         return predict_batches(self.predict_sample, x, batch_size=1, progress_bar = verbose == 1)
         
     def predict_sample(self, x):
-        grads = self.gradient_fn(x)
+        grads = self.gradient_fn([x])
         aggregate = self.agg_fn(grads)
         return aggregate
 
