@@ -17,7 +17,7 @@ class MCDropoutModel:
         self.model = model
         self.mc_func = K.function([model.layers[0].input, K.learning_phase()],
                                   [model.layers[-1].output])
-        self.mc_pred = lambda x: self.mc_func([x, 1])
+        self.mc_pred = lambda x: self.mc_func([x, 1])[0]
     
     def predict_samples(self, x, num_samples=10, batch_size=32, **kwargs):
         """
