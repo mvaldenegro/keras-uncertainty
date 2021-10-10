@@ -41,7 +41,7 @@ class GradientClassificationConfidence:
         
     def predict_sample(self, x):
         grads = self.gradient_fn([x])
-        aggregate = self.agg_fn(grads)
+        aggregate = self.agg_fn(grads[0])
         return aggregate
 
     # The gradient function can only process one sample at a time (not batches),
