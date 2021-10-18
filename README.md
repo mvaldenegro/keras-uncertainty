@@ -8,7 +8,11 @@ that indicates how trustworthy is the prediction, which can be integrated into t
 Typical research in machine learning applications (Computer Vision, NLP, etc) usually does not consider ways to produce well behaved
 uncertainty estimates, and machine learning methods can be used to extract or include uncertainty information into the model.
 
-![Regression example](https://raw.githubusercontent.com/mvaldenegro/keras-uncertainty/master/examples/deepensemble-x-pow-3.png)
+## Classification Uncertainty
+![Classification Comparison](https://raw.githubusercontent.com/mvaldenegro/keras-uncertainty/master/examples/images/uncertainty-two-moons.png)
+
+## Regression Uncertainty
+![Regression example](https://raw.githubusercontent.com/mvaldenegro/keras-uncertainty/master/examples/images/uncertainty-toy-regression.png)
 
 ## Installation
 
@@ -28,5 +32,6 @@ pip install --user git+https://github.com/mvaldenegro/keras-uncertainty.git
 
 - Monte Carlo Dropout (MC-Dropout)
 - Monte Carlo DropConnect (MC-DropConnect)
-- Deep Ensembles
-- DUQ (Upcoming).
+- Deep Ensembles and Sub-Ensembles.
+- Direct Uncertainty Quantification (DUQ).
+- Bayes by Backprop and Flipout.
