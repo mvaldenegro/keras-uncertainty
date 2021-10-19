@@ -11,9 +11,12 @@ uncertainty estimates, and machine learning methods can be used to extract or in
 ## Classification Uncertainty
 ![Classification Comparison](https://raw.githubusercontent.com/mvaldenegro/keras-uncertainty/master/examples/images/uncertainty-two-moons.png)
 
+Example available [here](https://github.com/mvaldenegro/keras-uncertainty/blob/master/examples/comparison-uncertainty-two-moons.py)
+
 ## Regression Uncertainty
 ![Regression example](https://raw.githubusercontent.com/mvaldenegro/keras-uncertainty/master/examples/images/uncertainty-toy-regression.png)
 
+Example available [here](https://github.com/mvaldenegro/keras-uncertainty/blob/master/examples/comparison-uncertainty-toy-regression.py)
 ## Installation
 
 You can easily install with pip, using the following command:
