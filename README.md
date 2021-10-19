@@ -1,4 +1,8 @@
 # keras-uncertainty
+
+<p align="center">
+    [<a href="https://github.com/mvaldenegro/keras-uncertainty/tree/master/examples">Examples</a>| Tutorials| Docs]
+</p>
 Utilities and Models to perform Uncertainty Quantification on Keras.
 
 Keras-Uncertainty is a high-level API to perform uncertainty quantification of machine learning models built with Keras.
@@ -11,12 +15,12 @@ uncertainty estimates, and machine learning methods can be used to extract or in
 ## Classification Uncertainty
 ![Classification Comparison](https://raw.githubusercontent.com/mvaldenegro/keras-uncertainty/master/examples/images/uncertainty-two-moons.png)
 
-Example available [here](https://github.com/mvaldenegro/keras-uncertainty/blob/master/examples/comparison-uncertainty-two-moons.py)
+Code example available [here](https://github.com/mvaldenegro/keras-uncertainty/blob/master/examples/comparison-uncertainty-two-moons.py)
 
 ## Regression Uncertainty
 ![Regression example](https://raw.githubusercontent.com/mvaldenegro/keras-uncertainty/master/examples/images/uncertainty-toy-regression.png)
 
-Example available [here](https://github.com/mvaldenegro/keras-uncertainty/blob/master/examples/comparison-uncertainty-toy-regression.py)
+Code example available [here](https://github.com/mvaldenegro/keras-uncertainty/blob/master/examples/comparison-uncertainty-toy-regression.py)
 ## Installation
 
 You can easily install with pip, using the following command:
@@ -30,6 +34,7 @@ pip install --user git+https://github.com/mvaldenegro/keras-uncertainty.git
 - Entropy and Negative Log-Likelihood metrics.
 - Calibration plots for classification.
 - Accuracy vs Confidence plot for classification.
+- Statistical metrics like Interval Score and others.
 
 ## Currently Implemented Methods
 
@@ -42,3 +47,5 @@ pip install --user git+https://github.com/mvaldenegro/keras-uncertainty.git
 | Bayes by Backprop | :heavy_check_mark: | :heavy_check_mark:|
 | Flipout           | :heavy_check_mark: | :heavy_check_mark:|
 | Gradient          | :heavy_check_mark: | :x:               |
+
+Please note that some UQ methods do not support some tasks like regression. Most methods support classification.
