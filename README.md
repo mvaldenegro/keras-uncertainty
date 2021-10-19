@@ -28,10 +28,14 @@ pip install --user git+https://github.com/mvaldenegro/keras-uncertainty.git
 - Calibration plots for classification.
 - Accuracy vs Confidence plot for classification.
 
-## Current Implementations
+## Currently Implemented Methods
 
-- Monte Carlo Dropout (MC-Dropout)
-- Monte Carlo DropConnect (MC-DropConnect)
-- Deep Ensembles and Sub-Ensembles.
-- Direct Uncertainty Quantification (DUQ).
-- Bayes by Backprop and Flipout.
+| Method            | Classification     | Regression        |
+|-------------------|--------------------|-------------------|
+| Ensembles         | :heavy_check_mark: | :heavy_check_mark:|
+| MC-Dropout        | :heavy_check_mark: | :heavy_check_mark:|
+| MC-Dropout        | :heavy_check_mark: | :heavy_check_mark:|
+| Direct UQ         | :heavy_check_mark: | :x:               |
+| Bayes by Backprop | :heavy_check_mark: | :heavy_check_mark:|
+| Flipout           | :heavy_check_mark: | :heavy_check_mark:|
+| Gradient          | :heavy_check_mark: | :x:               |
