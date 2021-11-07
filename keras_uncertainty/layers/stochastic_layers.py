@@ -38,3 +38,24 @@ class SamplingSoftmax(Layer):
         probs = probs / K.sum(probs, axis=-1, keepdims=True)
 
         return probs
+
+from keras.layers import Dropout
+
+class StochasticDropout(Dropout):
+    """
+        Applies Dropout to the input, independent of the training phase.
+
+        Used to easily implement MC-Dropout. It is a drop-in replacement for
+        the standard Keras Dropout layer, but note that this layer applies
+        dropout at the training and inference phases.
+    """
+    def __init__(self, rate, noise_shape=None, seed=None, **kwargs):
+        super(StochasticDropout, self).__init__(rate, noise_shape, seed, **kwargs)
+    
+    def call(self, inputs, training=None):
+        if 0. < self.rate < 1.:
+            noise_shape = self._get_noise_shape(inputs)
+
+            return K.dropout(inputs, self.rate, noise_shape, seed=self.seed)
+
+        return inputs
