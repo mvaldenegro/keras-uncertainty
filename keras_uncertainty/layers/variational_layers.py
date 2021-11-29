@@ -87,13 +87,15 @@ class VariationalDense(Layer):
         base_config = super(VariationalDense, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
+from keras.utils import conv_utils
+
 class VariationalConv(keras.layers.Layer):
     def __init__(self, rank, filters, kernel_size, kl_weight, strides=1, padding="valid", dilation_rate=1, activation="linear", use_bias_distribution = False, **kwargs):
         super().__init__(**kwargs)
 
         self.rank = rank
         self.filters = filters
-        self.kernel_size = kernel_size
+        self.kernel_size = conv_utils.normalize_tuple(kernel_size, self.rank, "kernel_size")
         self.kl_weight = kl_weight
         self.strides = strides
         self.padding = padding
