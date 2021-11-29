@@ -12,3 +12,18 @@ def probability(x, mu, sigma):
     x= K.square((x - mu) / sigma)
 
     return InvSqrt2PI * (1.0 / sigma) * K.exp(-0.5 * x)
+
+class GaussianDistribution:
+    def __init__(self, mean, std, shape):
+        self.mean = mean
+        self.std = std
+        self.shape = shape
+
+    def sample(self):
+        return K.random_normal(self.shape, self.mean, self.std)
+
+    def sample_perturbation(self):
+        return K.random_normal(self.shape, K.zeros(self.shape), self.std)
+
+    def log_probability(self, x):
+        return NegHalfLog2PI - K.log(self.std) - 0.5 * K.square((x - self.mean) / self.std)
