@@ -91,8 +91,6 @@ class VariationalConv(keras.layers.Layer):
     def __init__(self, rank, filters, kernel_size, kl_weight, strides=1, padding="valid", dilation_rate=1, activation="linear", use_bias_distribution = False, **kwargs):
         super().__init__(**kwargs)
 
-        assert rank == len(kernel_size)
-
         self.rank = rank
         self.filters = filters
         self.kernel_size = kernel_size
