@@ -136,15 +136,6 @@ class FlipoutConvND(VariationalConvND):
         
         return outputs
 
-    def apply_bias(self, inputs):
-        bias = self.bias_distribution.sample()
-        
-        if self.use_bias_distribution:
-            loss = self.kl_loss(bias, self.bias_distribution)
-            self.add_loss(loss)
-
-        return K.bias_add(inputs, bias)
-
 class FlipoutConv1D(FlipoutConvND):
     def __init__(self, filters, kernel_size, kl_weight, strides=1, padding="valid", dilation_rate=1, activation="linear", **kwargs):
         super().__init__(1, filters, kernel_size, kl_weight, strides, padding, dilation_rate, activation, **kwargs)

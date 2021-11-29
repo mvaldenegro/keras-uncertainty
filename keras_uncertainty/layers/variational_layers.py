@@ -192,10 +192,17 @@ class VariationalConvND(VariationalConv):
     def apply_kernel(self, inputs):
         kernel = self.kernel_distribution.sample()
         
+        loss = self.kl_loss(kernel, self.kernel_distribution)
+        self.add_loss(loss)
+        
         return self.conv(inputs, kernel)
 
     def apply_bias(self, inputs):
         bias = self.bias_distribution.sample()
+
+        if self.use_bias_distribution:
+            loss = self.kl_loss(bias, self.bias_distribution)
+            self.add_loss(loss)
 
         return K.bias_add(inputs, bias, data_format="channels_last")
 
