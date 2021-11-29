@@ -109,3 +109,50 @@ class FlipoutDense(Layer):
                   'prior_pi_1': self.prior_pi_1}
         base_config = super(FlipoutDense, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+from .variational_layers import VariationalConvND
+
+class FlipoutConvND(VariationalConvND):
+    def __init__(self, rank, filters, kernel_size, kl_weight, strides=1, padding="valid", dilation_rate=(1, 1, 1), activation="linear", **kwargs):
+        super().__init__(rank, filters, kernel_size, kl_weight, strides, padding, dilation_rate, activation, **kwargs)
+
+    def apply_kernel(self, inputs):
+        kernel = self.kernel_distribution.mean
+        kernel_perturb = self.kernel_distribution.sample_perturbation()
+        
+        loss = self.kl_loss(kernel, self.kernel_distribution)
+        self.add_loss(loss)
+    
+        input_shape = K.shape(inputs)
+        batch_shape = input_shape[:-1]
+        sign_input = rademacher.sample(input_shape)
+        
+        perturbed_inputs = self.conv(inputs * sign_input, kernel_perturb)
+        sign_output = rademacher.sample(K.shape(perturbed_inputs))
+        perturbed_inputs = perturbed_inputs * sign_output
+
+        outputs = self.conv(inputs, kernel)
+        outputs += perturbed_inputs
+        
+        return outputs
+
+    def apply_bias(self, inputs):
+        bias = self.bias_distribution.sample()
+        
+        if self.use_bias_distribution:
+            loss = self.kl_loss(bias, self.bias_distribution)
+            self.add_loss(loss)
+
+        return K.bias_add(inputs, bias)
+
+class FlipoutConv1D(FlipoutConvND):
+    def __init__(self, filters, kernel_size, kl_weight, strides=1, padding="valid", dilation_rate=1, activation="linear", **kwargs):
+        super().__init__(1, filters, kernel_size, kl_weight, strides, padding, dilation_rate, activation, **kwargs)
+
+class FlipoutConv2D(FlipoutConvND):
+    def __init__(self, filters, kernel_size, kl_weight, strides=(1, 1), padding="valid", dilation_rate=(1, 1), activation="linear", **kwargs):
+        super().__init__(2, filters, kernel_size, kl_weight, strides, padding, dilation_rate, activation, **kwargs)
+
+class FlipoutConv3D(FlipoutConvND):
+    def __init__(self, filters, kernel_size, kl_weight, strides=(1, 1, 1), padding="valid", dilation_rate=(1, 1, 1), activation="linear", **kwargs):
+        super().__init__(3, filters, kernel_size, kl_weight, strides, padding, dilation_rate, activation, **kwargs)
