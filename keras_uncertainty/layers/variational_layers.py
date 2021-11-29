@@ -97,9 +97,9 @@ class VariationalConv(keras.layers.Layer):
         self.filters = filters
         self.kernel_size = conv_utils.normalize_tuple(kernel_size, self.rank, "kernel_size")
         self.kl_weight = kl_weight
-        self.strides = strides
-        self.padding = padding
-        self.dilation_rate = dilation_rate
+        self.strides = conv_utils.normalize_tuple(strides, rank, 'strides')
+        self.padding = conv_utils.normalize_padding(padding)
+        self.dilation_rate = conv_utils.normalize_tuple(dilation_rate, rank, 'dilation_rate')
         self.activation = activations.get(activation)
         self.use_bias_distribution = use_bias_distribution
 
