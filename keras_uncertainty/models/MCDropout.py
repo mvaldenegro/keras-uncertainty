@@ -15,10 +15,14 @@ class MCDropoutModel:
         """
 
         self.model = model
-        self.mc_func = K.function([model.layers[0].input, K.learning_phase()],
-                                  [model.layers[-1].output])
-        self.mc_pred = lambda x: self.mc_func([x, 1])[0]
+        self.mc_pred = self.build_mc_model(model)
     
+    def build_mc_model(self, model):
+        mc_func = K.function([model.layers[0].input, K.learning_phase()],
+                                  [model.layers[-1].output])
+
+        return lambda x: mc_func([x, 1])[0]
+
     def predict_samples(self, x, num_samples=10, batch_size=32, **kwargs):
         """
             Performs a prediction using MC Dropout, and returns the produced output samples from the model.
