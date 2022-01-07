@@ -6,7 +6,6 @@ import keras.backend as K
 from keras.models import Model
 from keras.layers import average, Lambda, Input
 
-from .DeepEnsembleRegressor import deep_ensemble_regression_nll_loss
 from .DeepSubEnsembleClassifier import DeepSubEnsemble
 
 class DeepSubEnsembleRegressor(DeepSubEnsemble):
