@@ -3,20 +3,6 @@
 from .DeepEnsembleClassifier import DeepEnsemble
 
 import numpy as np
-import keras
-
-import keras.backend as K
-
-def deep_ensemble_regression_nll_loss(sigma_sq, epsilon = 1e-6):
-    """
-        Regression loss for a Deep Ensemble, using the negative log-likelihood loss.
-        This function returns a keras regression loss, given a symbolic tensor for the sigma square output of the model.
-        The training model should return the mean, while the testing/prediction model should return the mean and variance.4
-    """
-    def nll_loss(y_true, y_pred):
-        return 0.5 * K.mean(K.log(sigma_sq + epsilon) + K.square(y_true - y_pred) / (sigma_sq + epsilon))
-
-    return nll_loss
 
 class DeepEnsembleRegressor(DeepEnsemble):
     """

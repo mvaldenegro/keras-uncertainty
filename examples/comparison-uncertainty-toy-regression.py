@@ -8,9 +8,9 @@ from keras.utils import to_categorical
 
 import keras_uncertainty
 from keras_uncertainty.models import MCDropoutRegressor, DeepEnsembleRegressor, StochasticRegressor, TwoHeadStochasticRegressor
-from keras_uncertainty.layers import DropConnectDense, BayesByBackpropDense, FlipoutDense
-from keras_uncertainty.models import deep_ensemble_regression_nll_loss
+from keras_uncertainty.layers import DropConnectDense, VariationalDense, FlipoutDense
 from keras_uncertainty.metrics import gaussian_interval_score
+from keras_uncertainty.losses import regression_gaussian_nll_loss, regression_gaussian_beta_nll_loss
 
 from sklearn.datasets import make_moons
 
@@ -37,7 +37,7 @@ def train_standard_model(x_train, y_train, domain):
     train_model = Model(inp, mean)
     pred_model = Model(inp, [mean, var])
 
-    train_model.compile(loss=deep_ensemble_regression_nll_loss(var), optimizer="adam")
+    train_model.compile(loss=regression_gaussian_nll_loss(var), optimizer="adam")
     train_model.fit(x_train, y_train, verbose=2, epochs=100)
 
     mean_pred, var_pred = pred_model.predict(domain)
@@ -88,7 +88,7 @@ def train_ensemble_model(x_train, y_train, domain):
         train_model = Model(inp, mean)
         pred_model = Model(inp, [mean, var])
 
-        train_model.compile(loss=deep_ensemble_regression_nll_loss(var), optimizer="adam")
+        train_model.compile(loss=regression_gaussian_nll_loss(var), optimizer="adam")
 
         return train_model, pred_model
     
@@ -108,9 +108,9 @@ def train_bayesbackprop_model(x_train, y_train, domain):
     }
 
     model = Sequential()
-    model.add(BayesByBackpropDense(32, kl_weight, **prior_params, prior=True, activation="relu", input_shape=(1,)))
-    model.add(BayesByBackpropDense(32, kl_weight, **prior_params, prior=True, activation="relu"))
-    model.add(BayesByBackpropDense(1, kl_weight, **prior_params, prior=True, activation="linear"))
+    model.add(VariationalDense(32, kl_weight, **prior_params, prior=True, activation="relu", input_shape=(1,)))
+    model.add(VariationalDense(32, kl_weight, **prior_params, prior=True, activation="relu"))
+    model.add(VariationalDense(1, kl_weight, **prior_params, prior=True, activation="linear"))
 
     model.compile(loss="mean_squared_error", optimizer="adam")
 
@@ -157,7 +157,7 @@ def train_flipout_nll_model(x_train, y_train, domain):
     train_model = Model(inp, mean)
     pred_model = Model(inp, [mean, var])
 
-    train_model.compile(loss=deep_ensemble_regression_nll_loss(var), optimizer="adam")
+    train_model.compile(loss=regression_gaussian_nll_loss(var), optimizer="adam")
     train_model.fit(x_train, y_train, verbose=2, epochs=700)
 
     st_model = TwoHeadStochasticRegressor(pred_model)
@@ -165,13 +165,36 @@ def train_flipout_nll_model(x_train, y_train, domain):
 
     return pred_mean, std_pred
 
+def train_flipout_beta_nll_model(x_train, y_train, domain):
+    num_batches = x_train.shape[0] / 32
+    kl_weight = 1.0 / num_batches
+
+    inp = Input(shape=(1,))
+    x = FlipoutDense(32, kl_weight, activation="relu",)(inp)
+    x = FlipoutDense(32, kl_weight, activation="relu")(x)
+    mean = FlipoutDense(1, kl_weight, activation="linear")(x)
+    var = FlipoutDense(1, kl_weight, activation="softplus")(x)
+
+    train_model = Model(inp, mean)
+    pred_model = Model(inp, [mean, var])
+
+    train_model.compile(loss=regression_gaussian_beta_nll_loss(var), optimizer="adam")
+    train_model.fit(x_train, y_train, verbose=2, epochs=700)
+
+    st_model = TwoHeadStochasticRegressor(pred_model)
+    pred_mean, std_pred = st_model.predict(domain, num_samples=50)
+
+    return pred_mean, std_pred
+
+
 METHODS = {
     "Classical NN": train_standard_model,
     "Dropout": train_dropout_model,
     "DropConnect": train_dropconnect_model,
     "5 Ensembles": train_ensemble_model,
     "Flipout": train_flipout_model,
-    "Flipout + NLL": train_flipout_nll_model
+    "Flipout + NLL": train_flipout_nll_model,
+    "Flipout + Beta-NLL": train_flipout_beta_nll_model
 }
 
 NUM_SAMPLES = 30
@@ -217,6 +240,6 @@ if __name__ == "__main__":
         ax.get_yaxis().set_ticks([])    
 
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.savefig("uncertainty-toy-regression.png", bbox_inches="tight")
-    plt.savefig("uncertainty-toy-regression.pdf", bbox_inches="tight")
+    #plt.savefig("uncertainty-toy-regression.png", bbox_inches="tight")
+    #plt.savefig("uncertainty-toy-regression.pdf", bbox_inches="tight")
     plt.show()

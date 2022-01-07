@@ -6,9 +6,14 @@ from keras.models import Model
 from keras.layers import Dense, Input
 
 import keras_uncertainty
-from keras_uncertainty.models import DeepEnsembleRegressor, deep_ensemble_regression_nll_loss
+from keras_uncertainty.models import DeepEnsembleRegressor
+from keras_uncertainty.losses import regression_gaussian_nll_loss
 
 import matplotlib.pyplot as plt
+import tensorflow as tf
+
+from tensorflow.python.framework.ops import disable_eager_execution
+disable_eager_execution()
 
 def toy_dataset(input):
     output = []
@@ -31,7 +36,7 @@ def mlp_model():
     train_model = Model(inp, mean)
     pred_model = Model(inp, [mean, var])
 
-    train_model.compile(loss=deep_ensemble_regression_nll_loss(var), optimizer="adam")
+    train_model.compile(loss=regression_gaussian_nll_loss(var), optimizer="adam")
 
     return train_model, pred_model
 
