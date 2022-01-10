@@ -40,11 +40,13 @@ if backend == "keras":
     sys.stderr.write("Keras Uncertainty will use standalone Keras backend")
 
     from .keras_backend import layers, losses, metrics, models, activations, initializers, utils, regularizers
+    from .keras_backend import *
 
 if backend == "tfkeras":
     print("Keras Uncertainty will use tensorflow.keras backend")
 
     from .tfkeras_backend import layers, losses, metrics, models, activations, initializers, utils, regularizers
+    from .tfkeras_backend import *
 
 #For now implement einsum for tensorflow only
 from tensorflow import einsum
