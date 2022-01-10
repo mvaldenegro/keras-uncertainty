@@ -1,10 +1,7 @@
 import numpy as np
 
-import keras
-import keras.backend as K
-
-from keras.models import Model
-from keras.layers import average, Lambda, Input
+import keras_uncertainty.backend as K
+Model = K.models.Model
 
 from .DeepSubEnsembleClassifier import DeepSubEnsemble
 

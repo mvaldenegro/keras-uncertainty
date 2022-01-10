@@ -1,5 +1,4 @@
 import numpy as np
-import keras
 
 import os
 import yaml
@@ -7,7 +6,6 @@ import yaml
 from pydoc import locate
 
 from .DeepEnsembleClassifier import DeepEnsemble
-   
 
 class SimpleEnsemble(DeepEnsemble):
     """

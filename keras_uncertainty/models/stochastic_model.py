@@ -1,6 +1,5 @@
 import numpy as np
-import keras
-import keras.backend as K
+import keras_uncertainty.backend as K
 
 class StochasticModel:
     """
@@ -101,3 +100,6 @@ class TwoHeadStochasticRegressor(StochasticModel):
 
         return mixture_mean, np.sqrt(mixture_var)
 
+class KernelDensityStochasticModel(StochasticModel):
+    def __init__(self, model, num_samples=10, bandwidth=1.0):
+        super().__init__(model, num_samples)

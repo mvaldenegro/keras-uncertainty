@@ -1,7 +1,6 @@
 import numpy as np
-import keras
-import keras.backend as K
 
+import keras_uncertainty.backend as K
 from keras_uncertainty.utils import predict_batches
 
 class MCDropoutModel:

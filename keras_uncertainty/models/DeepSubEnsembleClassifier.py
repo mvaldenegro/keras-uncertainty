@@ -1,10 +1,10 @@
 import numpy as np
 
-import keras
-import keras.backend as K
+import keras_uncertainty.backend as K
 
-from keras.models import Model
-from keras.layers import average, Lambda, Input
+Model = K.models.Model
+Input = K.layers.Input
+average = K.layers.average
 
 class DeepSubEnsemble:
     def __init__(self, trunk_network_fn=None, task_network_fn=None, num_estimators=None,
