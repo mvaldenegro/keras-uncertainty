@@ -1,5 +1,4 @@
-import keras
-import keras.backend as K
+import keras_uncertainty.backend as K
 
 def negative_log_likelihood(y_true, y_pred):
     """
