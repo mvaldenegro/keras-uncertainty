@@ -9,5 +9,7 @@ from keras import metrics
 from keras import regularizers
 from keras import models
 from keras import callbacks
+from keras import utils
+from keras import initializers
 
 from keras.backend import *

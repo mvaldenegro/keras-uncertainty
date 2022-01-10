@@ -39,9 +39,15 @@ if not os.path.exists(config_path):
 if backend == "keras":
     sys.stderr.write("Keras Uncertainty will use standalone Keras backend")
 
-    from .keras_backend import layers, losses, metrics
+    from .keras_backend import layers, losses, metrics, models, activations, initializers, utils, regularizers
 
 if backend == "tfkeras":
     print("Keras Uncertainty will use tensorflow.keras backend")
 
-    from .tfkeras_backend import layers, losses, metrics
+    from .tfkeras_backend import layers, losses, metrics, models, activations, initializers, utils, regularizers
+
+#For now implement einsum for tensorflow only
+from tensorflow import einsum
+
+#Expose local copy of conv_utils
+from . import conv_utils
