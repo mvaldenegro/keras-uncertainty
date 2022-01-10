@@ -1,15 +1,19 @@
 import numpy as np
-import math
 
-import keras
-from keras.models import Sequential, Model
-from keras.layers import Dense, Input
+import tensorflow as tf
+tf.compat.v1.disable_eager_execution()
 
 import keras_uncertainty
 from keras_uncertainty.models import DeepEnsembleRegressor, TwoHeadStochasticRegressor
 from keras_uncertainty.layers import DropConnectDense, FlipoutDense, StochasticDropout
 from keras_uncertainty.losses import regression_gaussian_nll_loss, regression_gaussian_beta_nll_loss
 from keras_uncertainty.datasets import toy_regression_monotonic_sinusoid
+import keras_uncertainty.backend as K
+
+Dense = K.layers.Dense
+Input = K.layers.Input
+Model = K.models.Model
+Sequential = K.models.Sequential
 
 import matplotlib.pyplot as plt
 
