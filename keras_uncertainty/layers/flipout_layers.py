@@ -1,9 +1,8 @@
 import numpy as np
-
-import keras
-import keras.backend as K
-from keras.layers import Layer
-from keras import activations, initializers, regularizers, constraints
+import keras_uncertainty.backend as K
+Layer = K.layers.Layer
+activations = K.activations
+initializers = K.initializers
 
 from keras_uncertainty.distributions import gaussian, rademacher
 

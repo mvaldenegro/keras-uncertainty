@@ -1,5 +1,6 @@
-from keras.layers import Layer
-import keras.backend as K
+import keras_uncertainty.backend as K
+Layer = K.layers.Layer
+Dropout = K.layers.Dropout
 
 class SamplingSoftmax(Layer):
     """
@@ -38,8 +39,6 @@ class SamplingSoftmax(Layer):
         probs = probs / K.sum(probs, axis=-1, keepdims=True)
 
         return probs
-
-from keras.layers import Dropout
 
 class StochasticDropout(Dropout):
     """

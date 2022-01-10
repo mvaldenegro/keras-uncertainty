@@ -1,9 +1,10 @@
 import numpy as np
 
-import keras
-import keras.backend as K
-from keras.layers import Layer
-from keras import activations, initializers, regularizers, constraints
+import keras_uncertainty.backend as K
+Layer = K.layers.Layer
+activations = K.activations
+initializers = K.initializers
+conv_utils = K.conv_utils
 
 from keras_uncertainty.distributions import gaussian
 
@@ -87,9 +88,7 @@ class VariationalDense(Layer):
         base_config = super(VariationalDense, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
-from keras.utils import conv_utils
-
-class VariationalConv(keras.layers.Layer):
+class VariationalConv(Layer):
     def __init__(self, rank, filters, kernel_size, kl_weight, strides=1, padding="valid", dilation_rate=1, activation="linear", use_bias_distribution = False, **kwargs):
         super().__init__(**kwargs)
 
@@ -116,8 +115,6 @@ class VariationalConv(keras.layers.Layer):
         return output
 
     def compute_output_shape(self, input_shape):
-        from keras.utils import conv_utils
-
         space = input_shape[1:-1]
         new_space = []
         for i in range(len(space)):

@@ -1,9 +1,8 @@
 import numpy as np
 
-import keras
-import keras.backend as K
-from keras.layers import Layer
-from keras.regularizers import l2
+import keras_uncertainty.backend as K
+Layer = K.layers.Layer
+l2 = K.regularizers.l2
 
 import tensorflow as tf
 from tqdm import trange
@@ -124,7 +123,7 @@ class RBFClassifier(Layer):
         return [(None, self.num_classes)]
 
     def call(self, inputs, training=None):
-        z = tf.einsum("ij,mnj->imn", inputs, self.kernels)
+        z = K.einsum("ij,mnj->imn", inputs, self.kernels)
         out = self.rbf(z)
 
         return out
