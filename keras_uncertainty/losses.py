@@ -1,5 +1,4 @@
-import keras
-import keras.backend as K
+import keras_uncertainty.backend as K
 
 # Losses commonly used in uncertainty quantification and probabilistic forecasting
 
