@@ -3,7 +3,7 @@ import os
 import json
 
 CONFIG_FILE = "config.json"
-DEFAULT_BACKEND = "tfkeras"
+DEFAULT_BACKEND = "keras"
 DEFAULT_CONFIG = {
     "backend": DEFAULT_BACKEND
 }
