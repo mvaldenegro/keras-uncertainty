@@ -1,8 +1,5 @@
 import numpy as np
 
-import tensorflow as tf
-tf.compat.v1.disable_eager_execution()
-
 import keras_uncertainty
 from keras_uncertainty.models import DeepEnsembleRegressor, TwoHeadStochasticRegressor
 from keras_uncertainty.layers import DropConnectDense, FlipoutDense, StochasticDropout
