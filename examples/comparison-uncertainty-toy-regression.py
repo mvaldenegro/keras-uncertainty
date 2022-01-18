@@ -62,11 +62,11 @@ def train_dropout_model(x_train, y_train, domain, prob=0.2):
 
     return pred_mean, pred_std
 
-def train_dropconnect_model(x_train, y_train, domain, prob=0.05, drop_noise_shape=None):
+def train_dropconnect_model(x_train, y_train, domain, prob=0.05, noise_shape=None):
     model = Sequential()
-    model.add(DropConnectDense(32, activation="relu", input_shape=(1,), prob=prob, drop_noise_shape=drop_noise_shape))
-    model.add(DropConnectDense(32, activation="relu", prob=prob, drop_noise_shape=drop_noise_shape))
-    model.add(DropConnectDense(1, activation="linear", drop_noise_shape=drop_noise_shape))
+    model.add(DropConnectDense(32, activation="relu", input_shape=(1,), prob=prob, noise_shape=noise_shape))
+    model.add(DropConnectDense(32, activation="relu", prob=prob, noise_shape=noise_shape))
+    model.add(DropConnectDense(1, activation="linear", noise_shape=noise_shape))
 
     model.compile(loss="mean_squared_error", optimizer="adam")
 

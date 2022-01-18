@@ -8,7 +8,7 @@ from keras.utils import to_categorical
 import keras_uncertainty
 from keras_uncertainty.models import MCDropoutClassifier, DeepEnsembleClassifier, StochasticClassifier, GradientClassificationConfidence
 from keras_uncertainty.layers import duq_training_loop, add_gradient_penalty, add_l2_regularization
-from keras_uncertainty.layers import DropConnectDense, BayesByBackpropDense, RBFClassifier, FlipoutDense
+from keras_uncertainty.layers import DropConnectDense, VariationalDense, RBFClassifier, FlipoutDense
 from keras_uncertainty.utils import numpy_entropy
 
 from sklearn.datasets import make_moons
@@ -95,9 +95,9 @@ def train_bayesbackprop_model(x_train, y_train, domain):
     }
 
     model = Sequential()
-    model.add(BayesByBackpropDense(32, kl_weight, **prior_params, prior=False, activation="relu", input_shape=(2,)))
-    model.add(BayesByBackpropDense(32, kl_weight, **prior_params, prior=False, activation="relu"))
-    model.add(BayesByBackpropDense(2, kl_weight, **prior_params, prior=False, activation="softmax"))
+    model.add(VariationalDense(32, kl_weight, **prior_params, prior=False, activation="relu", input_shape=(2,)))
+    model.add(VariationalDense(32, kl_weight, **prior_params, prior=False, activation="relu"))
+    model.add(VariationalDense(2, kl_weight, **prior_params, prior=False, activation="softmax"))
 
     model.compile(loss="sparse_categorical_crossentropy", optimizer="adam", metrics=["accuracy", "sparse_categorical_crossentropy"])
 
