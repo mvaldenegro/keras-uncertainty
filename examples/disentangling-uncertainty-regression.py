@@ -23,7 +23,7 @@ def train_stochastic_model(trunk_model, x_train, y_train, domain, epochs=200, de
     train_model = Model(inp, mean)
     pred_model = Model(inp, [mean, var])
 
-    train_model.compile(loss=regression_gaussian_beta_nll_loss(var, beta=2.0), optimizer="adam")
+    train_model.compile(loss=regression_gaussian_nll_loss(var), optimizer="adam")
     train_model.fit(x_train, y_train, verbose=2, epochs=epochs)
 
     st_model = TwoHeadStochasticRegressor(pred_model)
@@ -72,7 +72,7 @@ def train_ensemble_model(x_train, y_train, domain):
         train_model = Model(inp, mean)
         pred_model = Model(inp, [mean, var])
 
-        train_model.compile(loss=regression_gaussian_beta_nll_loss(var, beta=2.0), optimizer="adam")
+        train_model.compile(loss=regression_gaussian_nll_loss(var), optimizer="adam")
 
         return train_model, pred_model
     
