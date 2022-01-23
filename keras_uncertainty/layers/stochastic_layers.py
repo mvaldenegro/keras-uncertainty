@@ -18,7 +18,7 @@ class SamplingSoftmax(Layer):
         return [(None, mean_is[-1])]
 
     def call(self, inputs):
-        assert len(inputs) == 2, "This layers requires exactly two inputs (mean and variance logits)"
+        assert len(inputs) == 2, "This layer requires exactly two inputs (mean and variance logits)"
 
         logit_mean, logit_var = inputs
         logit_std = K.sqrt(logit_var)
