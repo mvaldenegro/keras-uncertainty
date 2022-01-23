@@ -12,7 +12,10 @@ class SamplingSoftmax(Layer):
         self.temperature = temperature
 
     def compute_output_shape(self, input_shape):
-        return [(None, input_shape[-1])]
+        assert len(input_shape) == 2
+        mean_is, var_s = input_shape
+
+        return [(None, mean_is[-1])]
 
     def call(self, inputs):
         assert len(inputs) == 2, "This layers requires exactly two inputs (mean and variance logits)"
