@@ -31,6 +31,9 @@ class SamplingSoftmax(Layer):
         logit_std = K.repeat_elements(logit_std, self.num_samples, axis=1)
 
         logit_samples = K.random_normal(logit_shape, mean=logit_mean, stddev=logit_std)
+        
+        # Apply max normalization for numerical stability
+        logit_samples = logit_samples - K.max(logit_samples, axis=-1, keepdims=True)
 
         # Apply temperature scaling to logits
         logit_samples = logit_samples / self.temperature
