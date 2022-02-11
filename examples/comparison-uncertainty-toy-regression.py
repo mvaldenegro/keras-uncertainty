@@ -3,12 +3,11 @@ import math
 
 import keras
 from keras.models import Sequential, Model
-from keras.layers import Dense, Dropout, Input
-from keras.utils import to_categorical
+from keras.layers import Dense, Input
 
 import keras_uncertainty
-from keras_uncertainty.models import MCDropoutRegressor, DeepEnsembleRegressor, StochasticRegressor, TwoHeadStochasticRegressor
-from keras_uncertainty.layers import DropConnectDense, VariationalDense, FlipoutDense
+from keras_uncertainty.models import DeepEnsembleRegressor, StochasticRegressor, TwoHeadStochasticRegressor
+from keras_uncertainty.layers import DropConnectDense, VariationalDense, FlipoutDense, StochasticDropout
 from keras_uncertainty.metrics import gaussian_interval_score
 from keras_uncertainty.losses import regression_gaussian_nll_loss, regression_gaussian_beta_nll_loss
 
@@ -48,16 +47,16 @@ def train_standard_model(x_train, y_train, domain):
 def train_dropout_model(x_train, y_train, domain, prob=0.2):
     model = Sequential()
     model.add(Dense(32, activation="relu", input_shape=(1,)))
-    model.add(Dropout(prob))
+    model.add(StochasticDropout(prob))
     model.add(Dense(32, activation="relu"))
-    model.add(Dropout(prob))
+    model.add(StochasticDropout(prob))
     model.add(Dense(1, activation="linear"))
 
     model.compile(loss="mean_squared_error", optimizer="adam")
 
     model.fit(x_train, y_train, verbose=2, epochs=100)
 
-    mc_model = MCDropoutRegressor(model)
+    mc_model = StochasticRegressor(model)
     pred_mean, pred_std = mc_model.predict(domain, num_samples=100)
 
     return pred_mean, pred_std
@@ -72,7 +71,7 @@ def train_dropconnect_model(x_train, y_train, domain, prob=0.05, noise_shape=Non
 
     model.fit(x_train, y_train, verbose=2, epochs=100)
 
-    mc_model = MCDropoutRegressor(model)
+    mc_model = StochasticRegressor(model)
     pred_mean, pred_std = mc_model.predict(domain, num_samples=100)
 
     return pred_mean, pred_std
