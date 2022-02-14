@@ -71,7 +71,7 @@ class TwoHeadStochasticRegressor(StochasticModel):
     """
         A stochastic model that has two ouput heads, one for mean and another for variance, useful for aleatoric/epistemic uncertainty estimation.
     """
-    def __init__(self, model, num_samples=10, variance_type="linear_std"):
+    def __init__(self, model, num_samples=10, variance_type="linear_variance"):
         super().__init__(model, num_samples)
 
         assert variance_type in ["logit", "linear_std", "linear_variance"]
