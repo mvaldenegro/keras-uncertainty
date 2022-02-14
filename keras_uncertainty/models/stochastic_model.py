@@ -71,8 +71,23 @@ class TwoHeadStochasticRegressor(StochasticModel):
     """
         A stochastic model that has two ouput heads, one for mean and another for variance, useful for aleatoric/epistemic uncertainty estimation.
     """
-    def __init__(self, model, num_samples=10):
+    def __init__(self, model, num_samples=10, variance_type="linear_std"):
         super().__init__(model, num_samples)
+
+        assert variance_type in ["logit", "linear_std", "linear_variance"]
+        self.variance_type = variance_type
+
+    """
+        Preprocesses and interprets the variance output prodcued by the model, producing a standard deviation.
+    """
+    def preprocess_variance_output(self, var_input):
+        if self.variance_type is "logit":
+            return np.exp(var_input)
+
+        if self.variance_type is "linear_variance":
+            return np.sqrt(var_input)
+        
+        return var_input
 
     def predict(self, inp, num_samples=None, batch_size=32, output_scaler=None, disentangle_uncertainty=False, **kwargs):
         """
@@ -87,18 +102,20 @@ class TwoHeadStochasticRegressor(StochasticModel):
 
         means = np.array(mean_samples)
         variances = np.array(var_samples)
+        stds = self.preprocess_variance_output(variances)
         
         mixture_mean = np.mean(means, axis=0)
-        mixture_var  = np.mean(variances + np.square(means), axis=0) - np.square(mixture_mean)
+        mixture_var  = np.mean(np.square(stds) + np.square(means), axis=0) - np.square(mixture_mean)
         mixture_var[mixture_var < 0.0] = 0.0
-                
-        if disentangle_uncertainty:
-            epi_var = np.var(means, axis=0)
-            ale_var = np.mean(variances, axis=0)
+        mixture_std = np.sqrt(mixture_var)
+                                
+        if disentangle_uncertainty:            
+            epi_std = np.std(means, axis=0)
+            ale_std = np.mean(stds, axis=0)
 
-            return mixture_mean, np.sqrt(ale_var), np.sqrt(epi_var)
+            return mixture_mean, ale_std, epi_std
 
-        return mixture_mean, np.sqrt(mixture_var)
+        return mixture_mean, mixture_std
 
 class KernelDensityStochasticModel(StochasticModel):
     def __init__(self, model, num_samples=10, bandwidth=1.0):
