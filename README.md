@@ -42,10 +42,11 @@ pip install --user git+https://github.com/mvaldenegro/keras-uncertainty.git
 |-------------------|--------------------|-------------------|
 | Ensembles         | :heavy_check_mark: | :heavy_check_mark:|
 | MC-Dropout        | :heavy_check_mark: | :heavy_check_mark:|
-| MC-Dropout        | :heavy_check_mark: | :heavy_check_mark:|
+| MC-DropConnect    | :heavy_check_mark: | :heavy_check_mark:|
 | Direct UQ         | :heavy_check_mark: | :x:               |
 | Bayes by Backprop | :heavy_check_mark: | :heavy_check_mark:|
 | Flipout           | :heavy_check_mark: | :heavy_check_mark:|
 | Gradient          | :heavy_check_mark: | :x:               |
+
 
 Please note that some UQ methods do not support some tasks like regression. Most methods support classification.
