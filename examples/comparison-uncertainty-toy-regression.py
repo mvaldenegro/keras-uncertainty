@@ -9,6 +9,7 @@ import keras_uncertainty
 from keras_uncertainty.models import DeepEnsembleRegressor, StochasticRegressor, TwoHeadStochasticRegressor
 from keras_uncertainty.layers import DropConnectDense, VariationalDense, FlipoutDense, StochasticDropout
 from keras_uncertainty.metrics import gaussian_interval_score
+from keras_uncertainty.utils import regressor_calibration_error
 from keras_uncertainty.losses import regression_gaussian_nll_loss, regression_gaussian_beta_nll_loss
 
 from sklearn.datasets import make_moons
@@ -219,6 +220,7 @@ if __name__ == "__main__":
         y_pred_mean, y_pred_std = METHODS[key](x_train, y_train, domain)
 
         score = gaussian_interval_score(domain_y, y_pred_mean, y_pred_std)
+        calib_err = regressor_calibration_error(y_pred_mean, domain_y, y_pred_std)
 
         y_pred_mean = y_pred_mean.reshape((-1,))
         y_pred_std = y_pred_std.reshape((-1,))
@@ -230,7 +232,7 @@ if __name__ == "__main__":
         ax.fill_between(domain.ravel(), y_pred_down_1, y_pred_up_1, color=(0, 0, 0.9, 0.7), label="One $\sigma$ CI")
         ax.plot(domain.ravel(), y_pred_mean, '.', color=(0, 0.9, 0.0, 0.8), markersize=0.2, label="Mean")
 
-        ax.set_title("{}\nInterval Score: {:.2f}".format(key, score))
+        ax.set_title("{}\nIS: {:.2f} CE: {:.2f}".format(key, score, calib_err))
         ax.set_ylim([-20.0, 20.0])
 
         ax.axvline(x=-4.0, color="black", linestyle="dashed")
