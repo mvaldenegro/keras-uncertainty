@@ -101,9 +101,6 @@ def classifier_calibration_curve(y_pred, y_true, y_confidences, metric="mae", nu
 
     return curve_conf, curve_acc
 
-def regressor_calibration_curve(y_pred, y_true, y_confidences):
-    return None
-
 def classifier_accuracy_confidence_curve(y_pred, y_true, y_confidences, num_points=20):
     candidate_confs = np.linspace(0.0, 0.99, num=num_points)
 
@@ -121,3 +118,56 @@ def classifier_accuracy_confidence_curve(y_pred, y_true, y_confidences, num_poin
         out_accuracy.append(acc)
 
     return out_confidences, out_accuracy
+
+from scipy.stats import norm
+
+def confidence_interval_accuracy(y_intervals, y_true):
+    interval_min, interval_max = y_intervals
+    indicator = np.logical_and(y_true >= interval_min, y_true <= interval_max)
+
+    return np.mean(indicator)
+
+def regressor_calibration_curve(y_pred, y_true, y_std, num_points=20, distribution="gaussian"):
+    alphas = np.linspace(0.0 + EPSILON, 1.0 - EPSILON, num_points + 1)
+    curve_conf = []
+    curve_acc = []
+
+    for alpha in alphas:
+        alpha_intervals = norm.interval(alpha, y_pred, y_std)
+        acc = confidence_interval_accuracy(alpha_intervals, y_true)
+
+        curve_conf.append(alpha)
+        curve_acc.append(acc)
+
+    return np.array(curve_conf), np.array(curve_acc)
+
+def regressor_calibration_error(y_pred, y_true, y_std, num_points=20, distribution="gaussian", error_metric="mae"):
+    curve_conf, curve_acc = regressor_calibration_curve(y_pred, y_true, y_std, num_points=num_points, distribution=distribution)
+    errors = np.abs(curve_conf - curve_acc)
+
+    if error_metric is "mae":
+        return np.mean(errors)
+    elif error_metric is "max":
+        return np.max(errors)
+
+    raise ValueError("Invalid metric {}".format(error_metric))
+
+def regressor_error_confidence_curve(y_pred, y_true, y_std, num_points=20, distribution="gaussian", error_metric="mae"):
+    min_conf = y_std.min()
+    max_conf = y_std.max()
+    candidate_confs = np.linspace(min_conf, max_conf, num=num_points)
+
+    out_confidences = []
+    out_errors = []
+
+    for confidence in candidate_confs:
+        examples_idx = np.where(y_std >= confidence)
+        filt_preds = y_pred[examples_idx]
+        filt_true = y_true[examples_idx]
+
+        acc = accuracy(filt_true, filt_preds)
+
+        out_confidences.append(confidence)
+        out_errors.append(acc)
+
+    return np.array(out_confidences), np.array(out_errors)
