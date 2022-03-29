@@ -26,7 +26,7 @@ def regression_gaussian_beta_nll_loss(variance_tensor, beta=0.5, epsilon=1e-8, v
         #if variance_logits:
         #    variance_tensor = K.exp(variance_tensor)
 
-        beta_sigma_sq = K.stop_gradient(K.pow(variance_tensor, beta))
+        beta_sigma_sq = K.stop_gradient(K.pow(variance_tensor, 2.0 * beta))
         return 0.5 * K.mean(beta_sigma_sq * (K.log(variance_tensor + epsilon) + K.square(y_true - y_pred) / (variance_tensor + epsilon)))
 
     return beta_nll
