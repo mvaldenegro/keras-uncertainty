@@ -17,6 +17,12 @@ class DropConnect:
     def needs_drop(self):
         return 0.0 < self.prob < 1.0
 
+    def sample(self, tensor, dropit=True, noise_shape=None):
+        if dropit:
+            return K.dropout(tensor, self.prob, noise_shape)
+
+        return tensor
+
     def replace_tensor(self, tensor_train, tensor_test):
         if self.uses_learning_phase:
             return K.in_train_phase(tensor_train, tensor_test)
@@ -50,16 +56,17 @@ class DropConnectDense(DropConnect, Dense):
         if self.needs_drop:
             self.uses_learning_phase = use_learning_phase
 
-    def build(self, input_shape):
-        Dense.build(self, input_shape)
+    def call(self, inputs, **kwargs):
+        kernel_sample = self.sample(self.kernel)
+        bias_sample = self.sample(self.bias, dropit=self.drop_bias)
 
-        if self.needs_drop:
-            dc_kernel = K.dropout(self.kernel, self.prob, self.noise_shape)
-            self.kernel = self.replace_tensor(dc_kernel, self.kernel)
+        outputs = K.dot(inputs, kernel_sample)
+        
+        if self.use_bias:
+            outputs += bias_sample
 
-            if self.drop_bias:
-                dc_bias = K.dropout(self.bias, self.prob, self.noise_shape)
-                self.bias = self.replace_tensor(dc_bias, self.bias)
+        # This always produces stochastic outputs
+        return self.activation(outputs)
 
     def get_config(self):
         config_dc = DropConnect.get_config(self)
