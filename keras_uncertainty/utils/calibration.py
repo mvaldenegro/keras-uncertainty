@@ -128,6 +128,12 @@ def confidence_interval_accuracy(y_intervals, y_true):
     return np.mean(indicator)
 
 def regressor_calibration_curve(y_pred, y_true, y_std, num_points=20, distribution="gaussian"):
+    """
+        Computes the reliability plot for a regression prediction.
+        :param y_pred: model predictions, usually the mean of the predicted distribution.
+        :param y_std: model predicted confidence, usually the standard deviation of the predicted distribution.
+        :param y_true: ground truth labels.
+    """
     alphas = np.linspace(0.0 + EPSILON, 1.0 - EPSILON, num_points + 1)
     curve_conf = []
     curve_acc = []
@@ -152,7 +158,7 @@ def regressor_calibration_error(y_pred, y_true, y_std, num_points=20, distributi
 
     raise ValueError("Invalid metric {}".format(error_metric))
 
-def regressor_error_confidence_curve(y_pred, y_true, y_std, num_points=20, distribution="gaussian", error_metric="mae"):
+def regressor_error_confidence_curve(y_pred, y_true, y_std, num_points=20, distribution="gaussian", error_metric="mae", normalize_std=False):
     min_conf = y_std.min()
     max_conf = y_std.max()
     candidate_confs = np.linspace(min_conf, max_conf, num=num_points)
@@ -160,14 +166,26 @@ def regressor_error_confidence_curve(y_pred, y_true, y_std, num_points=20, distr
     out_confidences = []
     out_errors = []
 
+    metric_fn = None
+
+    if error_metric is "mae":
+        metric_fn = lambda x, y: np.mean(np.abs(x - y))
+    elif error_metric is "mse":
+        metric_fn = lambda x, y: np.mean(np.square(x - y))
+    else:
+        raise ValueError("Uknown regression error metric {}".format(error_metric))
+
     for confidence in candidate_confs:
-        examples_idx = np.where(y_std >= confidence)
+        examples_idx = np.where(y_std >= confidence)[0]
         filt_preds = y_pred[examples_idx]
         filt_true = y_true[examples_idx]
 
-        acc = accuracy(filt_true, filt_preds)
+        error = metric_fn(filt_true, filt_preds)
+
+        if normalize_std:
+            confidence = (confidence - min_conf) / (max_conf - min_conf)
 
         out_confidences.append(confidence)
-        out_errors.append(acc)
+        out_errors.append(error)
 
     return np.array(out_confidences), np.array(out_errors)
