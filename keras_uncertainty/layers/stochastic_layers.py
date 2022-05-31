@@ -68,6 +68,13 @@ class SamplingSoftmax(Layer):
 
         return probs
 
+    def get_config(self):
+        config = {'num_samples': self.num_samples,
+                  'temperature': self.temperature,
+                  'variance_type': self.variance_type}
+        base_config = super(SamplingSoftmax, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
+
 class StochasticDropout(Dropout):
     """
         Applies Dropout to the input, independent of the training phase.
