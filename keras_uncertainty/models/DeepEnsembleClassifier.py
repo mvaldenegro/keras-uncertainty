@@ -5,6 +5,9 @@ import yaml
 
 from pydoc import locate
 
+import keras_uncertainty
+load_model = keras_uncertainty.backend.models.load_model
+
 class AdversarialExampleGenerator:
     pass
 
@@ -86,7 +89,7 @@ class DeepEnsemble:
         models = []
 
         for _, filename in metadata["models"].items():
-            models.append(keras.models.load_model(os.path.join(folder, filename)))
+            models.append(load_model(os.path.join(folder, filename)))
 
         clazz = locate(metadata["class"])
 
