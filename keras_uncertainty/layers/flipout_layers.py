@@ -38,13 +38,14 @@ class FlipoutDense(Layer):
         return [(None, self.units)]
 
     def build(self, input_shape):
+        feature_dims = input_shape[1]
         self.kernel_mu = self.add_weight(name='kernel_mu',
-                                         shape=(input_shape[1], self.units),
+                                         shape=(feature_dims, self.units),
                                          initializer=initializers.normal(stddev=self.initializer_sigma),
                                          trainable=True)
         
         self.kernel_rho = self.add_weight(name='kernel_rho',
-                                          shape=(input_shape[1], self.units),
+                                          shape=(feature_dims, self.units),
                                           initializer=initializers.normal(mean=-3.0, stddev=self.initializer_sigma),
                                           trainable=True)
 
@@ -105,7 +106,7 @@ class FlipoutDense(Layer):
                   'prior': self.prior,
                   'prior_sigma_1': self.prior_sigma_1,
                   'prior_sigma_2': self.prior_sigma_2,
-                  'prior_pi_1': self.prior_pi_1}
+                  'prior_pi': self.prior_pi_1}
         base_config = super(FlipoutDense, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
