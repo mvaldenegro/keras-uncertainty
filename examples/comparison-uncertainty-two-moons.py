@@ -6,7 +6,7 @@ from keras.layers import Dense, Dropout
 from keras.utils import to_categorical
 
 import keras_uncertainty
-from keras_uncertainty.models import MCDropoutClassifier, DeepEnsembleClassifier, StochasticClassifier, GradientClassificationConfidence
+from keras_uncertainty.models import DeepEnsembleClassifier, StochasticClassifier, GradientClassificationConfidence
 from keras_uncertainty.layers import duq_training_loop, add_gradient_penalty, add_l2_regularization
 from keras_uncertainty.layers import DropConnectDense, VariationalDense, RBFClassifier, FlipoutDense
 from keras_uncertainty.utils import numpy_entropy
@@ -45,7 +45,7 @@ def train_dropout_model(x_train, y_train, domain, prob=0.2):
 
     model.fit(x_train, y_train, verbose=2, epochs=50)
 
-    mc_model = MCDropoutClassifier(model)
+    mc_model = StochasticClassifier(model)
     preds = mc_model.predict(domain, num_samples=100)
     entropy = uncertainty(preds)
 
@@ -61,7 +61,7 @@ def train_dropconnect_model(x_train, y_train, domain, prob=0.05):
 
     model.fit(x_train, y_train, verbose=2, epochs=50)
 
-    mc_model = MCDropoutClassifier(model)
+    mc_model = StochasticClassifier(model)
     preds = mc_model.predict(domain, num_samples=100)
     entropy = uncertainty(preds)
 
