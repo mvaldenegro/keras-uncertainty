@@ -1,4 +1,3 @@
-from .MCDropout import MCDropoutClassifier, MCDropoutRegressor
 from .DeepEnsembleClassifier import DeepEnsembleClassifier
 from .DeepEnsembleRegressor import DeepEnsembleRegressor
 
