@@ -2,3 +2,4 @@ keras>=2.2.0
 numpy
 tqdm
 scipy
+pyyaml
