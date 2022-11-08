@@ -14,7 +14,6 @@ import numpy as np
 
 from sklearn.metrics import accuracy_score
 
-
 def network():
     model = Sequential()
     model.add(DropConnectConv2D(32, kernel_size=(3, 3), activation='relu', input_shape=(32, 32, 3), padding='same'))
@@ -52,7 +51,6 @@ def network():
               optimizer='adam', metrics=['accuracy'])    
     
     return model
-
 
 if __name__ == "__main__":
     model = network()

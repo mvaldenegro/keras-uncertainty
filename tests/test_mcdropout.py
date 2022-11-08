@@ -6,7 +6,6 @@ from keras.models import Sequential
 
 from keras_uncertainty.models import StochasticClassifier, StochasticRegressor
 
-
 def test_mcdropout_classifier():
     model = Sequential()
     model.add(Dense(10, input_shape=(1,), activation='relu'))
@@ -25,7 +24,6 @@ def test_mcdropout_classifier():
 
     print("Multi-sample prediction: {}".format(probs))
 
-
 def test_mcdropout_regressor():
     model = Sequential()
     model.add(Dense(10, input_shape=(1,), activation='relu'))
@@ -43,7 +41,6 @@ def test_mcdropout_regressor():
     probs = mc_model.predict(inp)[0]
 
     print("Multi-sample prediction: {}".format(probs))
-
 
 if __name__ == "__main__":
     test_mcdropout_classifier()
