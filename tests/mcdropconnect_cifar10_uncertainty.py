@@ -1,7 +1,7 @@
 import keras_uncertainty
 from keras_uncertainty.utils import numpy_negative_log_likelihood, numpy_entropy
 from keras_uncertainty.layers import DropConnectConv2D, DropConnectDense
-from keras_uncertainty.models import MCDropoutClassifier
+from keras_uncertainty.models import StochasticClassifier
 
 import keras
 import keras.backend as K
@@ -13,6 +13,7 @@ from keras.utils import to_categorical
 import numpy as np
 
 from sklearn.metrics import accuracy_score
+
 
 def network():
     model = Sequential()
@@ -52,6 +53,7 @@ def network():
     
     return model
 
+
 if __name__ == "__main__":
     model = network()
     model.summary() 
@@ -64,7 +66,7 @@ if __name__ == "__main__":
 
     model.save("dropconnect_cifar10_vgg-custom.hdf5")
 
-    mcd = MCDropoutClassifier(model)
+    mcd = StochasticClassifier(model)
 
     for samples in range(1, 20):
         y_pred = mcd.predict(x_test, num_samples=samples)
