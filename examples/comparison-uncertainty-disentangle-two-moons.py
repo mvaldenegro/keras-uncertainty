@@ -55,7 +55,7 @@ def train_dropout_model(x_train, y_train, domain, prob=0.5):
     model.add(Dropout(prob))
     model.add(Dense(32, activation="relu"))
     model.add(Dropout(prob))
-    model.add(Dense(2, activation="softmax"))
+    model.add(Dense(2, activation="relu"))
 
     return train_eval_stochastic_model(model, x_train, y_train, domain, epochs=500)
 
@@ -63,7 +63,7 @@ def train_dropconnect_model(x_train, y_train, domain, prob=0.25):
     model = Sequential()
     model.add(DropConnectDense(32, activation="relu", input_shape=(2,), prob=prob))
     model.add(DropConnectDense(32, activation="relu", prob=prob))
-    model.add(DropConnectDense(2, activation="softmax", prob=prob))
+    model.add(DropConnectDense(2, activation="relu", prob=prob))
 
     return train_eval_stochastic_model(model, x_train, y_train, domain, epochs=500)
 
@@ -72,7 +72,7 @@ def train_ensemble_model(x_train, y_train, domain):
         model = Sequential()
         model.add(Dense(32, activation="relu", input_shape=(2,)))
         model.add(Dense(32, activation="relu"))
-        model.add(Dense(2, activation="softmax"))
+        model.add(Dense(2, activation="relu"))
 
         model.compile(loss="sparse_categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
 
@@ -98,7 +98,7 @@ def train_flipout_model(x_train, y_train, domain):
     model = Sequential()
     model.add(FlipoutDense(32, kl_weight, **prior_params, activation="relu", input_shape=(2,)))
     model.add(FlipoutDense(32, kl_weight, **prior_params, activation="relu"))
-    model.add(FlipoutDense(2, kl_weight, **prior_params, activation="softmax"))
+    model.add(FlipoutDense(2, kl_weight, **prior_params, activation="relu"))
 
     return train_eval_stochastic_model(model, x_train, y_train, domain, epochs=1000)
 
