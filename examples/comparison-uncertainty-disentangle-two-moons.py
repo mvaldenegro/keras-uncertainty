@@ -8,8 +8,8 @@ from keras.utils import to_categorical
 import keras_uncertainty
 from keras_uncertainty.models import DeepEnsembleClassifier, StochasticClassifier
 from keras_uncertainty.models import DisentangledStochasticClassifier
-from keras_uncertainty.layers import duq_training_loop, add_gradient_penalty, add_l2_regularization
-from keras_uncertainty.layers import DropConnectDense, VariationalDense, RBFClassifier, FlipoutDense, SamplingSoftmax
+from keras_uncertainty.layers import StochasticDropout
+from keras_uncertainty.layers import DropConnectDense, VariationalDense, FlipoutDense, SamplingSoftmax
 from keras_uncertainty.utils import numpy_entropy
 
 from sklearn.datasets import make_moons
@@ -52,18 +52,16 @@ def train_eval_stochastic_model(trunk_model, x_train, y_train, domain, epochs=30
 def train_dropout_model(x_train, y_train, domain, prob=0.5):
     model = Sequential()
     model.add(Dense(32, activation="relu", input_shape=(2,)))
-    model.add(Dropout(prob))
+    model.add(StochasticDropout(prob))
     model.add(Dense(32, activation="relu"))
-    model.add(Dropout(prob))
-    model.add(Dense(2, activation="relu"))
+    model.add(StochasticDropout(prob))
 
     return train_eval_stochastic_model(model, x_train, y_train, domain, epochs=500)
 
 def train_dropconnect_model(x_train, y_train, domain, prob=0.25):
     model = Sequential()
     model.add(DropConnectDense(32, activation="relu", input_shape=(2,), prob=prob))
-    model.add(DropConnectDense(32, activation="relu", prob=prob))
-    model.add(DropConnectDense(2, activation="relu", prob=prob))
+    model.add(DropConnectDense(32, activation="relu", prob=prob))    
 
     return train_eval_stochastic_model(model, x_train, y_train, domain, epochs=500)
 
@@ -72,7 +70,6 @@ def train_ensemble_model(x_train, y_train, domain):
         model = Sequential()
         model.add(Dense(32, activation="relu", input_shape=(2,)))
         model.add(Dense(32, activation="relu"))
-        model.add(Dense(2, activation="relu"))
 
         model.compile(loss="sparse_categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
 
@@ -98,7 +95,6 @@ def train_flipout_model(x_train, y_train, domain):
     model = Sequential()
     model.add(FlipoutDense(32, kl_weight, **prior_params, activation="relu", input_shape=(2,)))
     model.add(FlipoutDense(32, kl_weight, **prior_params, activation="relu"))
-    model.add(FlipoutDense(2, kl_weight, **prior_params, activation="relu"))
 
     return train_eval_stochastic_model(model, x_train, y_train, domain, epochs=1000)
 
