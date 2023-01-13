@@ -4,6 +4,7 @@ import os
 import yaml
 
 from pydoc import locate
+from itertools import chain
 
 import keras_uncertainty
 load_model = keras_uncertainty.backend.models.load_model
@@ -13,7 +14,7 @@ class AdversarialExampleGenerator:
 
 METADATA_FILENAME = "metadata.yml"
 
-class DeepEnsemble:
+class DeepEnsemble(object):
     def __init__(self, model_fn=None, num_estimators=None, models=None, needs_test_estimators=False):
         self.needs_test_estimators = needs_test_estimators
 
@@ -51,6 +52,11 @@ class DeepEnsemble:
 
             self.num_estimators = len(models)
 
+    @property
+    def trainable_variables(self):
+        train_var = [estimator.trainable_variables for estimator in self.test_estimators]
+        return [var for var in chain.from_iterable(train_var)]
+
     def save(self, folder, filename_pattern="model-ensemble-{}.hdf5"):
         """
             Save a Deep Ensemble into a folder, using individual HDF5 files for each ensemble member.
@@ -74,7 +80,6 @@ class DeepEnsemble:
 
         with open(os.path.join(folder, METADATA_FILENAME), 'w') as outfile:
             yaml.dump(metadata, outfile)
-            
 
     @staticmethod
     def load(folder):
@@ -93,7 +98,18 @@ class DeepEnsemble:
 
         clazz = locate(metadata["class"])
 
-        return clazz(models=models)        
+        return clazz(models=models)
+
+    def get_weights(self):
+        return [estimator.get_weights() for estimator in self.test_estimators]
+
+    def set_weights(self, weights):
+        for estimator, weight in zip(self.test_estimators, weights):
+            estimator.set_weights(weight)
+
+    def summary(self):
+        for estimator in self.test_estimators:
+            estimator.summary()
 
 class DeepEnsembleClassifier(DeepEnsemble):
     """

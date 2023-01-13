@@ -6,6 +6,7 @@ import yaml
 from pydoc import locate
 
 from .DeepEnsembleClassifier import DeepEnsemble
+import keras_uncertainty.backend as K
 
 class SimpleEnsemble(DeepEnsemble):
     """
@@ -76,3 +77,23 @@ class SimpleEnsemble(DeepEnsemble):
         std_pred = np.std(predictions, axis=0)
 
         return mean_pred, std_pred
+
+    def __call__(self, inputs, num_ensembles=None, **kwargs):
+        predictions = []
+
+        if num_ensembles is None:
+            estimators = self.test_estimators
+        else:
+            estimators = self.test_estimators[:num_ensembles]
+
+        for estimator in estimators:
+            pred = K.expand_dims(estimator(inputs, **kwargs), axis=0)
+            predictions.append(pred)
+
+        predictions = K.concatenate(predictions, axis=0)
+
+        mean_pred = K.mean(predictions, axis=0)
+        std_pred = K.std(predictions, axis=0)
+
+        return mean_pred, std_pred
+        
