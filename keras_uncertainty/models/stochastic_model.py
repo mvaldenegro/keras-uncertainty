@@ -35,9 +35,14 @@ class StochasticModel:
         else:
             return np.array(samples)
 
+    @property
+    def layers(self):
+        return self.model.layers
+
 class StochasticClassifier(StochasticModel):
     def __init__(self, model, num_samples=10):
         super().__init__(model, num_samples)
+
 
     def predict(self, inp, num_samples=None, batch_size=32, **kwargs):
         """
@@ -49,7 +54,7 @@ class StochasticClassifier(StochasticModel):
 
         return mean_probs
 
-class  StochasticRegressor(StochasticModel):
+class StochasticRegressor(StochasticModel):
     def __init__(self, model, num_samples=10):
         super().__init__(model, num_samples)
 
