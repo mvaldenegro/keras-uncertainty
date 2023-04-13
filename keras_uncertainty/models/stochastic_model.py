@@ -12,6 +12,7 @@ class StochasticModel:
         """
         self.model = model
         self.num_samples = num_samples
+        self.multi_output = len(model.outputs) > 1
     
     def predict_samples(self, x, num_samples=None, batch_size=32, multi_output=False, **kwargs):
         """
@@ -35,9 +36,30 @@ class StochasticModel:
         else:
             return np.array(samples)
 
+    #TODO Find a way to keep output names
+    def divide_outputs(self, multi_output_samples, num_outputs):
+        output = [None] * num_outputs
+
+        for out_idx in range(num_outputs):
+            output[out_idx] = np.array([e[out_idx] for e in multi_output_samples])
+
+        return output
+
     @property
     def layers(self):
         return self.model.layers
+
+    @property
+    def num_outputs(self):
+        return len(self.model.outputs)
+
+    @property
+    def outputs(self):
+        return self.model.outputs
+
+    @property
+    def output(self):
+        return self.model.output
 
 class StochasticClassifier(StochasticModel):
     def __init__(self, model, num_samples=10):
@@ -46,9 +68,22 @@ class StochasticClassifier(StochasticModel):
 
     def predict(self, inp, num_samples=None, batch_size=32, **kwargs):
         """
-            Performs a prediction given input inp using MC Dropout, and returns the averaged probabilities of model output.
+            Performs a prediction given input inp taking multiple stochastic samples, and returns the averaged probabilities of model output.
         """
-        samples = self.predict_samples(inp, num_samples, batch_size=batch_size, **kwargs)
+
+        samples = self.predict_samples(inp, num_samples, batch_size=batch_size, multi_output=self.multi_output, **kwargs)
+
+        if self.multi_output:
+            samples = self.divide_outputs(samples, self.num_outputs)
+            outputs = []
+
+            for i in range(self.num_outputs):
+                mean_probs = np.mean(samples[i], axis=0)
+                mean_probs = mean_probs / np.sum(mean_probs, axis=1, keepdims=True)
+                outputs.append(mean_probs)
+
+            return outputs
+        
         mean_probs = np.mean(samples, axis=0)
         mean_probs = mean_probs / np.sum(mean_probs, axis=1, keepdims=True)
 
@@ -61,8 +96,25 @@ class StochasticRegressor(StochasticModel):
     def predict(self, inp, num_samples=None, batch_size=32, output_scaler=None, **kwargs):
         """
             Performs a prediction  given input inp using MC Dropout, and returns the mean and standard deviation of the model output.
+            For multi-output models, the mean and standard deviations are returned for each output head, in the same order (mean_1, std_1, mean_2, std_2, ..., mean_n, std_n)
         """
-        samples = self.predict_samples(inp, num_samples, batch_size=batch_size, **kwargs)
+        samples = self.predict_samples(inp, num_samples, batch_size=batch_size, multi_output=self.multi_output, **kwargs)
+        
+        if self.multi_output:
+            samples = self.divide_outputs(samples, self.num_outputs)
+            outputs = []
+
+            for i in range(self.num_outputs):
+                if output_scaler is not None:
+                    samples[i] = list(map(lambda x: output_scaler.inverse_transform(x), samples[i]))
+
+                mean_pred = np.mean(samples[i], axis=0)
+                std_pred = np.std(samples[i], axis=0)
+                
+                outputs.append(mean_pred)
+                outputs.append(std_pred)
+
+            return outputs
 
         if output_scaler is not None:
             samples = list(map(lambda x: output_scaler.inverse_transform(x), samples))
