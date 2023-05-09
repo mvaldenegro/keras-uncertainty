@@ -15,13 +15,17 @@ class VariationalDense(Layer):
                  units,
                  kl_weight,
                  activation=None,
+                 initializer_sigma=0.1,
                  prior=True,
                  prior_sigma_1=1.5,
                  prior_sigma_2=0.1,
-                 prior_pi=0.5, **kwargs):
+                 prior_pi=0.5,
+                 bias_distribution=False,
+                 **kwargs):
         self.units = units
         self.kl_weight = kl_weight
         self.activation = activations.get(activation)
+        self.initializer_sigma = initializer_sigma
         self.prior = prior
         self.prior_sigma_1 = prior_sigma_1
         self.prior_sigma_2 = prior_sigma_2
@@ -29,6 +33,7 @@ class VariationalDense(Layer):
         self.prior_pi_2 = 1.0 - prior_pi
         self.init_sigma = np.sqrt(self.prior_pi_1 * self.prior_sigma_1 ** 2 +
                                   self.prior_pi_2 * self.prior_sigma_2 ** 2)
+        self.bias_distribution = bias_distribution
         self.uses_learning_phase = True
 
         super().__init__(**kwargs)
@@ -37,22 +42,23 @@ class VariationalDense(Layer):
         return [(None, self.units)]
 
     def build(self, input_shape):
+        feature_dims = input_shape[-1]
         self.kernel_mu = self.add_weight(name='kernel_mu',
-                                         shape=(input_shape[1], self.units),
-                                         initializer=initializers.normal(stddev=self.init_sigma),
+                                         shape=(feature_dims, self.units),
+                                         initializer=initializers.normal(stddev=self.initializer_sigma),
                                          trainable=True)
         self.bias_mu = self.add_weight(name='bias_mu',
                                        shape=(self.units,),
-                                       initializer=initializers.normal(stddev=self.init_sigma),
+                                       initializer=initializers.normal(stddev=self.initializer_sigma),
                                        trainable=True)
         self.kernel_rho = self.add_weight(name='kernel_rho',
-                                          shape=(input_shape[1], self.units),
-                                          initializer=initializers.constant(0.0),
+                                          shape=(feature_dims, self.units),
+                                          initializer=initializers.normal(mean=-3.0, stddev=self.initializer_sigma),
                                           trainable=True)
         self.bias_rho = self.add_weight(name='bias_rho',
                                         shape=(self.units,),
-                                        initializer=initializers.constant(0.0),
-                                        trainable=True)
+                                        initializer=initializers.normal(mean=-3.0, stddev=self.initializer_sigma),
+                                        trainable=self.bias_distribution)
         super().build(input_shape)
 
     def call(self, inputs, **kwargs):
