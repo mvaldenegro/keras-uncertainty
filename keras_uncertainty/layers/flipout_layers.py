@@ -44,6 +44,7 @@ class FlipoutDense(Layer):
                                          initializer=initializers.normal(stddev=self.initializer_sigma),
                                          trainable=True)
         
+        # -3.0 is an approximation for 0.0 with softplus, softplus(-3.0) ~ 0.0
         self.kernel_rho = self.add_weight(name='kernel_rho',
                                           shape=(feature_dims, self.units),
                                           initializer=initializers.normal(mean=-3.0, stddev=self.initializer_sigma),
