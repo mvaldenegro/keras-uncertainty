@@ -38,7 +38,7 @@ class FlipoutDense(Layer):
         return [(None, self.units)]
 
     def build(self, input_shape):
-        feature_dims = input_shape[1]
+        feature_dims = input_shape[-1]
         self.kernel_mu = self.add_weight(name='kernel_mu',
                                          shape=(feature_dims, self.units),
                                          initializer=initializers.normal(stddev=self.initializer_sigma),
