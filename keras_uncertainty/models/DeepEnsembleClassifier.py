@@ -52,10 +52,24 @@ class DeepEnsemble(object):
 
             self.num_estimators = len(models)
 
+        self.multi_output = self.num_outputs > 1
+
     @property
     def trainable_variables(self):
         train_var = [estimator.trainable_variables for estimator in self.test_estimators]
         return [var for var in chain.from_iterable(train_var)]
+
+    @property
+    def num_outputs(self):
+        return len(self.test_estimators[0].outputs)
+
+    def divide_outputs(self, ensemble_samples, num_outputs):
+        output = [None] * num_outputs
+
+        for out_idx in range(num_outputs):
+            output[out_idx] = np.array([e[out_idx] for e in ensemble_samples])
+
+        return output
 
     def save(self, folder, filename_pattern="model-ensemble-{}.hdf5"):
         """
