@@ -51,6 +51,19 @@ class SimpleEnsemble(DeepEnsemble):
         for estimator in estimators:
             predictions.append(np.expand_dims(estimator.predict(X, batch_size=batch_size, verbose=0, **kwargs), axis=0))
 
+        if self.multi_output:
+            predictions = self.divide_outputs(predictions, self.num_outputs)
+            outputs = []
+
+            for i in range(self.num_outputs):
+                mean_pred = np.mean(predictions[i], axis=0)
+                std_pred = np.std(predictions[i], axis=0)
+                
+                outputs.append(mean_pred)
+                outputs.append(std_pred)
+
+            return outputs
+
         predictions = np.concatenate(predictions)
         mean_pred = np.mean(predictions, axis=0)
         std_pred = np.std(predictions, axis=0)
@@ -71,6 +84,19 @@ class SimpleEnsemble(DeepEnsemble):
 
         for estimator in estimators:
             predictions.append(np.expand_dims(estimator.predict_generator(generator, steps=steps, **kwargs), axis=0))
+
+        if self.multi_output:
+            predictions = self.divide_outputs(predictions, self.num_outputs)
+            outputs = []
+
+            for i in range(self.num_outputs):
+                mean_pred = np.mean(predictions[i], axis=0)
+                std_pred = np.std(predictions[i], axis=0)
+                
+                outputs.append(mean_pred)
+                outputs.append(std_pred)
+
+            return outputs
 
         predictions = np.concatenate(predictions)
         mean_pred = np.mean(predictions, axis=0)
