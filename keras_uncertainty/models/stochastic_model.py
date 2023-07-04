@@ -36,6 +36,25 @@ class StochasticModel:
         else:
             return np.array(samples)
 
+    def call_samples(self, x, num_samples=None, multi_output=False, **kwargs):
+        """
+            Performs num_samples predictions by calling the model, and returns the produced output samples.
+        """
+
+        if num_samples is None:
+            num_samples = self.num_samples
+
+        assert num_samples > 0
+        samples = [None] * num_samples
+
+        if "verbose" not in kwargs:
+            kwargs["verbose"] = 0
+
+        for i in range(num_samples):
+            samples[i] = self.model(x, **kwargs)
+
+        return samples
+
     #TODO Find a way to keep output names
     def divide_outputs(self, multi_output_samples, num_outputs):
         output = [None] * num_outputs
@@ -89,6 +108,22 @@ class StochasticClassifier(StochasticModel):
 
         return mean_probs
 
+    def __call__(self, inputs, num_samples=None, **kwargs):
+        samples = self.call_samples(inputs, num_samples, multi_output=self.multi_output, **kwargs)
+        
+        if self.multi_output:
+            outputs = []
+
+            for i in range(self.num_outputs):
+                mean_probs = K.mean(samples[i], axis=0)                
+                outputs.append(mean_probs)
+
+            return outputs
+
+        mean_probs = K.mean(samples, axis=0)
+
+        return mean_probs
+
 class StochasticRegressor(StochasticModel):
     def __init__(self, model, num_samples=10):
         super().__init__(model, num_samples)
@@ -122,7 +157,27 @@ class StochasticRegressor(StochasticModel):
         mean_pred = np.mean(samples, axis=0)
         std_pred = np.std(samples, axis=0)
 
-        return mean_pred, std_pred    
+        return mean_pred, std_pred
+
+    def __call__(self, inputs, num_samples=None, **kwargs):
+        samples = self.call_samples(inputs, num_samples, multi_output=self.multi_output, **kwargs)
+        
+        if self.multi_output:
+            outputs = []
+
+            for i in range(self.num_outputs):
+                mean_pred = K.mean(samples[i], axis=0)
+                std_pred = K.std(samples[i], axis=0)
+                
+                outputs.append(mean_pred)
+                outputs.append(std_pred)
+
+            return outputs
+
+        mean_pred = K.mean(samples, axis=0)
+        std_pred = K.std(samples, axis=0)
+
+        return mean_pred, std_pred
 
 class TwoHeadStochasticRegressor(StochasticModel):
     """
