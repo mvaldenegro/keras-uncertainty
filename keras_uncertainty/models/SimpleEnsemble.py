@@ -112,8 +112,28 @@ class SimpleEnsemble(DeepEnsemble):
         else:
             estimators = self.test_estimators[:num_ensembles]
 
+        if self.multi_output:
+            output_names = [x.name for x in estimators[0].outputs]
+            for estimator in estimators:
+                prediction = estimator(inputs, **kwargs)
+                pred = [K.expand_dims(x, axis=0) for x in prediction]
+                predictions.append(pred)    
+
+            predictions = self.divide_outputs_symbolic(predictions, self.num_outputs)
+            outputs = []
+
+            for i in range(self.num_outputs):
+                mean_pred = K.mean(predictions[i], axis=0)
+                std_pred = K.std(predictions[i], axis=0)
+                
+                outputs.append(mean_pred)
+                outputs.append(std_pred)
+
+            return outputs        
+
         for estimator in estimators:
-            pred = K.expand_dims(estimator(inputs, **kwargs), axis=0)
+            prediction = estimator(inputs, **kwargs)
+            pred = K.expand_dims(prediction, axis=0)
             predictions.append(pred)
 
         predictions = K.concatenate(predictions, axis=0)

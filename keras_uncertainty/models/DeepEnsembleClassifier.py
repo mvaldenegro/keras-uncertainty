@@ -8,6 +8,7 @@ from itertools import chain
 
 import keras_uncertainty
 load_model = keras_uncertainty.backend.models.load_model
+import keras_uncertainty.backend as K
 
 class AdversarialExampleGenerator:
     pass
@@ -68,6 +69,14 @@ class DeepEnsemble(object):
 
         for out_idx in range(num_outputs):
             output[out_idx] = np.array([e[out_idx] for e in ensemble_samples])
+
+        return output
+
+    def divide_outputs_symbolic(self, ensemble_samples, num_outputs):
+        output = [None] * num_outputs
+
+        for out_idx in range(num_outputs):
+            output[out_idx] = K.concatenate([e[out_idx] for e in ensemble_samples], axis=0)
 
         return output
 
