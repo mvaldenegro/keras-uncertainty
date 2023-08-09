@@ -104,6 +104,42 @@ class DeepEnsemble(object):
         with open(os.path.join(folder, METADATA_FILENAME), 'w') as outfile:
             yaml.dump(metadata, outfile)
 
+    def save_weights(self, folder, filename_pattern="ensemble-weights-{}.hdf5"):
+        """
+            Save Ensemble weights into a folder, using individual HDF5 files for each ensemble member.
+            This allows for easily loading individual ensemble weights. Metadata is saved to allow loading of the whole ensemble.
+        """
+
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+
+        model_metadata = {}
+
+        for i in range(self.num_estimators):
+            filename = os.path.join(folder, filename_pattern.format(i))
+            self.test_estimators[i].save_weights(filename)
+
+            print("Saved estimator weights {} to {}".format(i, filename))
+
+            model_metadata[i] = filename_pattern.format(i)
+
+        metadata = {"model_weights": model_metadata}
+
+        with open(os.path.join(folder, METADATA_FILENAME), 'w') as outfile:
+            yaml.dump(metadata, outfile)
+
+    def load_weights(self, folder):
+        """
+            Load a Ensemble weights from a folder containing individual HDF5 files.
+        """
+        metadata = {}
+
+        with open(os.path.join(folder, METADATA_FILENAME)) as infile:
+            metadata = yaml.full_load(infile)
+
+        for idx, filename in metadata["model_weights"].items():
+            self.test_estimators[idx].load_weights(os.path.join(folder, filename))
+
     @staticmethod
     def load(folder):
         """
