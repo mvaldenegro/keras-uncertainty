@@ -38,7 +38,7 @@ def toy_regression_sinusoid(num_samples=1000, ood_samples=0):
     
     return x_train, y_train
 
-def toy_regression_monotonic_sinusoid(num_samples=500, ood_samples=0, disentangle_uncertainty=False):
+def toy_regression_monotonic_sinusoid(num_samples=500, ood_samples=0, disentangle_uncertainty=False, return_true_mean=False):
     """
         Returns samples from a sinusoid with increasing frequency and added heteroscendatic gaussian noise.
 
@@ -60,11 +60,21 @@ def toy_regression_monotonic_sinusoid(num_samples=500, ood_samples=0, disentangl
         x_test, y_test_ale = sample_function(fn_noise, [10.0, 15.0], size=ood_samples)
 
         if not disentangle_uncertainty:
+            if return_true_mean:
+                x_true, y_true = sample_function(fn_truth, [0.0, 10.0], size=num_samples)
+            
+                return x_train, y_train_epi + y_train_ale, x_test, y_test_epi + y_test_ale, y_true
+
             return x_train, y_train_epi + y_train_ale, x_test, y_test_epi + y_test_ale
         
         return x_train, y_train_epi, y_train_ale, x_test, y_test_epi, y_test_ale
 
     if not disentangle_uncertainty:
-        return x_train, y_train_epi + y_train_ale
-    
+        if return_true_mean:
+            x_true, y_true = sample_function(fn_truth, [0.0, 10.0], size=num_samples)
+            
+            return x_train, y_train_epi, y_train_ale, y_true
+
+        return x_train, y_train_epi + y_train_ale        
+
     return x_train, y_train_epi, y_train_ale
