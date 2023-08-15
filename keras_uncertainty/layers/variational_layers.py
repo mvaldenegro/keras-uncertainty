@@ -11,6 +11,14 @@ from keras_uncertainty.distributions import gaussian
 # Code partially based on http://krasserm.github.io/2019/03/14/bayesian-neural-networks/
 
 class VariationalDense(Layer):
+    """
+        Fully connected layer using Variational Inference.
+
+        This layer implemented Bayes by Backpropagation using Gaussian distributed weights.
+
+        Reference:
+            Blundell, Charles, et al. "Weight uncertainty in neural network". ICML 2015.
+    """
     def __init__(self,
                  units,
                  kl_weight,
