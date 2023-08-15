@@ -2,7 +2,7 @@ import keras_uncertainty.backend as K
 
 # Losses commonly used in uncertainty quantification and probabilistic forecasting
 
-def regression_gaussian_nll_loss(variance_tensor, epsilon=1e-8, variance_logits=False):
+def regression_gaussian_nll_loss(variance_tensor, epsilon=1e-8, variance_logits=False, **kwargs):
     """
         Gaussian negative log-likelihood for regression, with variance estimated by the model.
         This function returns a keras regression loss, given a symbolic tensor for the sigma square output of the model.
@@ -16,7 +16,7 @@ def regression_gaussian_nll_loss(variance_tensor, epsilon=1e-8, variance_logits=
 
     return nll
 
-def regression_gaussian_beta_nll_loss(variance_tensor, beta=0.5, epsilon=1e-8, variance_logits=False):
+def regression_gaussian_beta_nll_loss(variance_tensor, beta=1.0, epsilon=1e-8, variance_logits=False):
     """
         Gaussian negative log-likelihood for regression, with variance estimated by the model.
         This function returns a keras regression loss, given a symbolic tensor for the sigma square output of the model.
@@ -26,12 +26,12 @@ def regression_gaussian_beta_nll_loss(variance_tensor, beta=0.5, epsilon=1e-8, v
         #if variance_logits:
         #    variance_tensor = K.exp(variance_tensor)
 
-        beta_sigma_sq = K.stop_gradient(K.pow(variance_tensor, 2.0 * beta))
+        beta_sigma_sq = K.stop_gradient(K.pow(variance_tensor, beta))
         return 0.5 * K.mean(beta_sigma_sq * (K.log(variance_tensor + epsilon) + K.square(y_true - y_pred) / (variance_tensor + epsilon)))
 
     return beta_nll
 
-def regression_laplace_nll_loss(spread_tensor, epsilon=1e-8, variance_logits=False):
+def regression_laplace_nll_loss(spread_tensor, epsilon=1e-8, variance_logits=False, **kwargs):
     """
         Laplace negative log-likelihood for regression, with spread parameter estimated by the model.
         This function returns a keras regression loss, given a symbolic tensor for the sigma square output of the model.
@@ -42,17 +42,28 @@ def regression_laplace_nll_loss(spread_tensor, epsilon=1e-8, variance_logits=Fal
 
     return nll
 
+def regression_laplace_beta_nll_loss(spread_tensor, beta=1.0, epsilon=1e-8, variance_logits=False):
+    """
+        Laplace negative log-likelihood for regression, with spread parameter estimated by the model.
+        This function returns a keras regression loss, given a symbolic tensor for the sigma square output of the model.
+        The training model should return the mean, while the testing/prediction model should return the mean and variance.
+    """
+    def beta_nll(y_true, y_pred):
+        beta_sp = K.stop_gradient(K.pow(spread_tensor, beta))
+        return K.mean(beta_sp * (K.log(2.0 * spread_tensor + epsilon) + K.abs(y_true - y_pred) / (spread_tensor + epsilon)))
 
-def pinball_loss(tau: float):
+    return beta_nll
+
+def quantile_loss(tau: float):
     """
         Standard pinball loss for quantile regression.
     """
 
-    def pinball(y_true, y_pred):
+    def quantile(y_true, y_pred):
         err = y_true - y_pred
         return K.mean(K.maximum(tau * err, (tau - 1.0) * err), axis=-1)
 
-    return pinball
+    return quantile
 
 def brier_score(y_true, y_pred):
     """
