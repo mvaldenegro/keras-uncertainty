@@ -16,7 +16,6 @@ class VariationalDense(Layer):
                  kl_weight,
                  activation=None,
                  initializer_sigma=0.1,
-                 prior=True,
                  prior_sigma_1=1.5,
                  prior_sigma_2=0.1,
                  prior_pi=0.5,
@@ -26,7 +25,6 @@ class VariationalDense(Layer):
         self.kl_weight = kl_weight
         self.activation = activations.get(activation)
         self.initializer_sigma = initializer_sigma
-        self.prior = prior
         self.prior_sigma_1 = prior_sigma_1
         self.prior_sigma_2 = prior_sigma_2
         self.prior_pi_1 = prior_pi
@@ -76,7 +74,7 @@ class VariationalDense(Layer):
         return self.activation(K.dot(inputs, kernel) + bias)
 
     def kl_loss(self, w, mu, sigma):
-        return self.kl_weight * K.mean(gaussian.log_probability(w, mu, sigma) - self.prior * self.log_prior_prob(w))
+        return self.kl_weight * K.mean(gaussian.log_probability(w, mu, sigma) - self.log_prior_prob(w))
 
     def log_prior_prob(self, w):
         return K.log(self.prior_pi_1 * gaussian.probability(w, 0.0, self.prior_sigma_1) +

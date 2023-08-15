@@ -14,7 +14,6 @@ class FlipoutDense(Layer):
                  kl_weight,
                  activation=None,
                  initializer_sigma=0.1,
-                 prior=True,
                  prior_sigma_1=1.5,
                  prior_sigma_2=0.1,
                  prior_pi=0.5,
@@ -23,7 +22,6 @@ class FlipoutDense(Layer):
         self.units = units
         self.kl_weight = kl_weight
         self.activation = activations.get(activation)
-        self.prior = prior
         self.prior_sigma_1 = prior_sigma_1
         self.prior_sigma_2 = prior_sigma_2
         self.prior_pi_1 = prior_pi
@@ -93,7 +91,7 @@ class FlipoutDense(Layer):
         return self.activation(outputs)
 
     def kl_loss(self, w, mu, sigma):
-        return self.kl_weight * K.mean(gaussian.log_probability(w, mu, sigma) - self.prior * self.log_prior_prob(w))
+        return self.kl_weight * K.mean(gaussian.log_probability(w, mu, sigma) - self.log_prior_prob(w))
 
     def log_prior_prob(self, w):
         return K.log(self.prior_pi_1 * gaussian.probability(w, 0.0, self.prior_sigma_1) +
@@ -104,7 +102,6 @@ class FlipoutDense(Layer):
                   'kl_weight': self.kl_weight,
                   'activation': self.activation.__name__,
                   #'bias': self.bias,
-                  'prior': self.prior,
                   'prior_sigma_1': self.prior_sigma_1,
                   'prior_sigma_2': self.prior_sigma_2,
                   'prior_pi': self.prior_pi_1}
