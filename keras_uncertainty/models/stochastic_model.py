@@ -47,9 +47,6 @@ class StochasticModel:
         assert num_samples > 0
         samples = [None] * num_samples
 
-        if "verbose" not in kwargs:
-            kwargs["verbose"] = 0
-
         for i in range(num_samples):
             samples[i] = self.model(x, **kwargs)
 
