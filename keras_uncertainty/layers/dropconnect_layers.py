@@ -143,20 +143,21 @@ class DropConnectConvND(DropConnect, Layer):
         config["padding"] = self.padding
         config["dilation_rate"] = self.dilation_rate
         config["activation"] = self.activation.__name__
+        config["use_bias"] = self.use_bias
 
         return config
 
 class DropConnectConv1D(DropConnectConvND):
     def __init__(self, filters, kernel_size, strides=1, padding="valid", dilation_rate=(1, ), activation="linear", prob=0.5, use_bias=True, drop_bias=False, noise_shape=None, **kwargs):        
         DropConnectConvND.__init__(self, rank=1, filters=filters, kernel_size=kernel_size, strides=strides, padding=padding, dilation_rate=dilation_rate, activation=activation, 
-                                   prob=prob, use_bias=use-bias, drop_bias=drop_bias, noise_shape=noise_shape, **kwargs)
+                                   prob=prob, use_bias=use_bias, drop_bias=drop_bias, noise_shape=noise_shape, **kwargs)
 
 class DropConnectConv2D(DropConnectConvND):
     def __init__(self, filters, kernel_size, strides=(1, 1), padding="valid", dilation_rate=(1, 1), activation="linear", prob=0.5, use_bias=True, drop_bias=False, noise_shape=None, **kwargs):        
         DropConnectConvND.__init__(self, rank=2, filters=filters, kernel_size=kernel_size, strides=strides, padding=padding, dilation_rate=dilation_rate, activation=activation, 
-                                   prob=prob, use_bias=use-bias, drop_bias=drop_bias, noise_shape=noise_shape, **kwargs)
+                                   prob=prob, use_bias=use_bias, drop_bias=drop_bias, noise_shape=noise_shape, **kwargs)
 
 class DropConnectConv3D(DropConnectConvND):
     def __init__(self, filters, kernel_size, strides=(1, 1, 1), padding="valid", dilation_rate=(1, 1, 1), activation="linear", prob=0.5, use_bias=True, drop_bias=False, noise_shape=None, **kwargs):        
         DropConnectConvND.__init__(self, rank=3, filters=filters, kernel_size=kernel_size, strides=strides, padding=padding, dilation_rate=dilation_rate, activation=activation, 
-                                   prob=prob, use_bias=use-bias, drop_bias=drop_bias, noise_shape=noise_shape, **kwargs)
+                                   prob=prob, use_bias=use_bias, drop_bias=drop_bias, noise_shape=noise_shape, **kwargs)
