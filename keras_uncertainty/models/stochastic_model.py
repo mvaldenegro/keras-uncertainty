@@ -198,7 +198,7 @@ class TwoHeadStochasticRegressor(StochasticModel):
         
         return var_input
 
-    def predict(self, inp, num_samples=None, batch_size=32, output_scaler=None, disentangle_uncertainty=False, **kwargs):
+    def predict(self, inp, num_samples=None, batch_size=32, output_scaler=None, disentangle_uncertainty=False, output_aleatoric_epi=False, **kwargs):
         """
             Performs a prediction given input inp and returns the mean and standard deviation of the model output.
         """
@@ -222,6 +222,11 @@ class TwoHeadStochasticRegressor(StochasticModel):
             epi_std = np.std(means, axis=0)
             ale_std = np.mean(stds, axis=0)
 
+            if output_aleatoric_epi:
+                ale_std_epi = np.std(stds, axis=0)
+                
+                return mixture_mean, ale_std, epi_std, ale_std_epi
+            
             return mixture_mean, ale_std, epi_std
 
         return mixture_mean, mixture_std
