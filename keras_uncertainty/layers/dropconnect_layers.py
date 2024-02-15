@@ -68,7 +68,7 @@ class DropConnectDense(DropConnect, Dense):
         return dict(list(config_dc.items()) + list(config_base.items()))
 
 class DropConnectConvND(DropConnect, Layer):
-    def __init__(self, rank, filters, kernel_size, strides=1, padding="valid", dilation_rate=(1, 1, 1), activation="linear", prob=0.5, drop_bias=False, noise_shape=None, **kwargs):
+    def __init__(self, rank, filters, kernel_size, strides=1, padding="valid", dilation_rate=(1, 1, 1), activation="linear", prob=0.5, use_bias=True, drop_bias=False, noise_shape=None, **kwargs):
         DropConnect.__init__(self, prob=prob, drop_bias=drop_bias, noise_shape=noise_shape)
         Layer.__init__(**kwargs)
 
@@ -79,6 +79,7 @@ class DropConnectConvND(DropConnect, Layer):
         self.padding = conv_utils.normalize_padding(padding)
         self.dilation_rate = conv_utils.normalize_tuple(dilation_rate, rank, 'dilation_rate')
         self.activation = activations.get(activation)
+        self.use_bias = use_bias
 
     def compute_output_shape(self, input_shape):
         space = input_shape[1:-1]
@@ -135,20 +136,21 @@ class DropConnectConvND(DropConnect, Layer):
         config["padding"] = self.padding
         config["dilation_rate"] = self.dilation_rate
         config["activation"] = self.activation.__name__
+        config["use_bias"] = self.use_bias
 
         return config
 
 class DropConnectConv1D(DropConnectConvND):
-    def __init__(self, filters, kernel_size, strides=1, padding="valid", dilation_rate=(1, ), activation="linear", prob=0.5, drop_bias=False, noise_shape=None, **kwargs):        
+    def __init__(self, filters, kernel_size, strides=1, padding="valid", dilation_rate=(1, ), activation="linear", prob=0.5, use_bias=True, drop_bias=False, noise_shape=None, **kwargs):        
         DropConnectConvND.__init__(self, rank=1, filters=filters, kernel_size=kernel_size, strides=strides, padding=padding, dilation_rate=dilation_rate, activation=activation, 
-                                   prob=prob, drop_bias=drop_bias, noise_shape=noise_shape, **kwargs)
+                                   prob=prob, use_bias=use_bias, drop_bias=drop_bias, noise_shape=noise_shape, **kwargs)
 
 class DropConnectConv2D(DropConnectConvND):
-    def __init__(self, filters, kernel_size, strides=(1, 1), padding="valid", dilation_rate=(1, 1), activation="linear", prob=0.5, drop_bias=False, noise_shape=None, **kwargs):        
+    def __init__(self, filters, kernel_size, strides=(1, 1), padding="valid", dilation_rate=(1, 1), activation="linear", prob=0.5, use_bias=True, drop_bias=False, noise_shape=None, **kwargs):        
         DropConnectConvND.__init__(self, rank=2, filters=filters, kernel_size=kernel_size, strides=strides, padding=padding, dilation_rate=dilation_rate, activation=activation, 
-                                   prob=prob, drop_bias=drop_bias, noise_shape=noise_shape, **kwargs)
+                                   prob=prob, use_bias=use_bias, drop_bias=drop_bias, noise_shape=noise_shape, **kwargs)
 
 class DropConnectConv3D(DropConnectConvND):
-    def __init__(self, filters, kernel_size, strides=(1, 1, 1), padding="valid", dilation_rate=(1, 1, 1), activation="linear", prob=0.5, drop_bias=False, noise_shape=None, **kwargs):        
+    def __init__(self, filters, kernel_size, strides=(1, 1, 1), padding="valid", dilation_rate=(1, 1, 1), activation="linear", prob=0.5, use_bias=True, drop_bias=False, noise_shape=None, **kwargs):        
         DropConnectConvND.__init__(self, rank=3, filters=filters, kernel_size=kernel_size, strides=strides, padding=padding, dilation_rate=dilation_rate, activation=activation, 
-                                   prob=prob, drop_bias=drop_bias, noise_shape=noise_shape, **kwargs)
+                                   prob=prob, use_bias=use_bias, drop_bias=drop_bias, noise_shape=noise_shape, **kwargs)

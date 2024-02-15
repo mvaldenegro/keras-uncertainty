@@ -38,7 +38,7 @@ class DeepEnsembleRegressor(DeepEnsemble):
             self.train_estimators[i].fit_generator(generator, epochs=epochs, **kwargs)
             
 
-    def predict(self, X, batch_size=32, output_scaler=None, num_ensembles=None, disentangle_uncertainty=False, **kwargs):
+    def predict(self, X, batch_size=32, output_scaler=None, num_ensembles=None, disentangle_uncertainty=False, output_aleatoric_epi=False, **kwargs):
         """
             Makes a prediction. Predictions from each estimator are used to build a gaussian mixture and its mean and standard deviation returned.
         """
@@ -79,6 +79,11 @@ class DeepEnsembleRegressor(DeepEnsemble):
         if disentangle_uncertainty:
             epi_var = np.var(means, axis=0)
             ale_var = np.mean(variances, axis=0)
+
+            if output_aleatoric_epi:
+                ale_var_epi = np.var(variances, axis=0)
+                
+                return mixture_mean, np.sqrt(ale_var), np.sqrt(epi_var), np.sqrt(ale_var_epi)
 
             return mixture_mean, np.sqrt(ale_var), np.sqrt(epi_var)
 
