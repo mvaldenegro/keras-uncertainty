@@ -1,18 +1,19 @@
-import keras_uncertainty.backend as K
+import keras
+from keras import ops
 
 # Losses commonly used in uncertainty quantification and probabilistic forecasting
 
-def regression_gaussian_nll_loss(variance_tensor, epsilon=1e-8, variance_logits=False, **kwargs):
+def regression_gaussian_nll_loss(epsilon=1e-8, variance_logits=False, **kwargs):
     """
         Gaussian negative log-likelihood for regression, with variance estimated by the model.
         This function returns a keras regression loss, given a symbolic tensor for the sigma square output of the model.
         The training model should return the mean, while the testing/prediction model should return the mean and variance.
     """
-    def nll(y_true, y_pred):
+    def nll(y_true, y_pred_mean, y_pred_var):
         #if variance_logits:
         #    variance_tensor = K.exp(variance_tensor)
 
-        return 0.5 * K.mean(K.log(variance_tensor + epsilon) + K.square(y_true - y_pred) / (variance_tensor + epsilon))
+        return 0.5 * ops.mean(ops.log(y_pred_var + epsilon) + ops.square(y_true - y_pred_mean) / (y_pred_var + epsilon))
 
     return nll
 
@@ -26,8 +27,8 @@ def regression_gaussian_beta_nll_loss(variance_tensor, beta=1.0, epsilon=1e-8, v
         #if variance_logits:
         #    variance_tensor = K.exp(variance_tensor)
 
-        beta_sigma_sq = K.stop_gradient(K.pow(variance_tensor, beta))
-        return 0.5 * K.mean(beta_sigma_sq * (K.log(variance_tensor + epsilon) + K.square(y_true - y_pred) / (variance_tensor + epsilon)))
+        beta_sigma_sq = ops.stop_gradient(ops.power(variance_tensor, beta))
+        return 0.5 * ops.mean(beta_sigma_sq * (ops.log(variance_tensor + epsilon) + ops.square(y_true - y_pred) / (variance_tensor + epsilon)))
 
     return beta_nll
 
@@ -38,7 +39,7 @@ def regression_laplace_nll_loss(spread_tensor, epsilon=1e-8, variance_logits=Fal
         The training model should return the mean, while the testing/prediction model should return the mean and variance.
     """
     def nll(y_true, y_pred):
-        return K.mean(K.log(2.0 * spread_tensor + epsilon) + K.abs(y_true - y_pred) / (spread_tensor + epsilon))
+        return ops.mean(ops.log(2.0 * spread_tensor + epsilon) + ops.abs(y_true - y_pred) / (spread_tensor + epsilon))
 
     return nll
 
@@ -49,8 +50,8 @@ def regression_laplace_beta_nll_loss(spread_tensor, beta=1.0, epsilon=1e-8, vari
         The training model should return the mean, while the testing/prediction model should return the mean and variance.
     """
     def beta_nll(y_true, y_pred):
-        beta_sp = K.stop_gradient(K.pow(spread_tensor, beta))
-        return K.mean(beta_sp * (K.log(2.0 * spread_tensor + epsilon) + K.abs(y_true - y_pred) / (spread_tensor + epsilon)))
+        beta_sp = ops.stop_gradient(ops.pow(spread_tensor, beta))
+        return ops.mean(beta_sp * (ops.log(2.0 * spread_tensor + epsilon) + ops.abs(y_true - y_pred) / (spread_tensor + epsilon)))
 
     return beta_nll
 
@@ -61,7 +62,7 @@ def quantile_loss(tau: float):
 
     def quantile(y_true, y_pred):
         err = y_true - y_pred
-        return K.mean(K.maximum(tau * err, (tau - 1.0) * err), axis=-1)
+        return ops.mean(ops.maximum(tau * err, (tau - 1.0) * err), axis=-1)
 
     return quantile
 
@@ -69,4 +70,4 @@ def brier_score(y_true, y_pred):
     """
         Mean squared error on the probabilities.
     """
-    return K.mean(K.square(y_true - y_pred))
+    return ops.mean(ops.square(y_true - y_pred))
