@@ -151,9 +151,9 @@ def regressor_calibration_error(y_pred, y_true, y_std, num_points=20, distributi
     curve_conf, curve_acc = regressor_calibration_curve(y_pred, y_true, y_std, num_points=num_points, distribution=distribution)
     errors = np.abs(curve_conf - curve_acc)
 
-    if error_metric is "mae":
+    if error_metric == "mae":
         return np.mean(errors)
-    elif error_metric is "max":
+    elif error_metric == "max":
         return np.max(errors)
 
     raise ValueError("Invalid metric {}".format(error_metric))
@@ -168,9 +168,9 @@ def regressor_error_confidence_curve(y_pred, y_true, y_std, num_points=20, distr
 
     metric_fn = None
 
-    if error_metric is "mae":
+    if error_metric == "mae":
         metric_fn = lambda x, y: np.mean(np.abs(x - y))
-    elif error_metric is "mse":
+    elif error_metric == "mse":
         metric_fn = lambda x, y: np.mean(np.square(x - y))
     else:
         raise ValueError("Uknown regression error metric {}".format(error_metric))

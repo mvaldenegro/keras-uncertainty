@@ -9,7 +9,8 @@ from __future__ import print_function
 
 from six.moves import range
 import numpy as np
-import keras_uncertainty.backend as K
+import keras
+from keras import backend
 
 def normalize_tuple(value, n, name):
     """Transforms a single int or iterable of ints into an int tuple.
@@ -53,7 +54,7 @@ def normalize_tuple(value, n, name):
 def normalize_padding(value):
     padding = value.lower()
     allowed = {'valid', 'same', 'causal'}
-    if K.backend() == 'theano':
+    if backend.backend() == 'theano':
         allowed.add('full')
     if padding not in allowed:
         raise ValueError('The `padding` argument must be one of "valid", "same" '
