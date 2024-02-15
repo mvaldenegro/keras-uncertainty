@@ -10,7 +10,7 @@ This library is only compatible with Python 3.x.
 '''
 
 setup(name='Keras-Uncertainty',
-      version='0.0.1',
+      version='0.0.2',
       description='Uncertainty Quantification for Keras models',
       long_description=long_description,
       author='Matias Valdenegro-Toro',
@@ -18,6 +18,6 @@ setup(name='Keras-Uncertainty',
       url='https://github.com/mvaldenegro/keras-uncertainty',
       download_url='https://github.com/mvaldenegro/keras-uncertainty/releases',
       license='LGPLv3',
-      install_requires=['keras>=2.2.0', 'numpy', 'tqdm', 'scipy'],
+      install_requires=['keras>=3.0.0', 'numpy', 'tqdm', 'scipy'],
       packages=find_packages()
      )
