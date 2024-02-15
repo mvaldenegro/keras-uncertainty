@@ -10,3 +10,6 @@ from .gradient_confidence import GradientClassificationConfidence
 
 from .stochastic_model import StochasticClassifier, StochasticRegressor, TwoHeadStochasticRegressor
 from .disentangling import DisentangledStochasticClassifier
+
+from .ensembles import Ensemble, EnsembleClassifier, EnsembleRegressor
+from .aleatoric import TwoHeadModel

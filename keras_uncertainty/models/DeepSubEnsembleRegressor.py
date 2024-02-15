@@ -1,7 +1,7 @@
 import numpy as np
 
-import keras_uncertainty.backend as K
-Model = K.models.Model
+import keras
+from keras.models import Model
 
 from .DeepSubEnsembleClassifier import DeepSubEnsemble
 

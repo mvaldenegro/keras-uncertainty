@@ -6,9 +6,9 @@ import yaml
 from pydoc import locate
 from itertools import chain
 
-import keras_uncertainty
-load_model = keras_uncertainty.backend.models.load_model
-import keras_uncertainty.backend as K
+import keras
+from keras import ops
+from keras.models import load_model
 
 class AdversarialExampleGenerator:
     pass
@@ -31,11 +31,11 @@ class DeepEnsemble(object):
                 if self.needs_test_estimators:
                     estimators = model_fn()
 
-                    if type(estimators) is not tuple:
-                        raise ValueError("model_fn should return a tuple")
+                    #if type(estimators) is not tuple:
+                    #    raise ValueError("model_fn should return a tuple")
 
-                    if len(estimators) != 2:
-                        raise ValueError("model_fn returned a tuple of unexpected size ({} vs 2)".format(len(estimators)))
+                    #if len(estimators) != 2:
+                    #    raise ValueError("model_fn returned a tuple of unexpected size ({} vs 2)".format(len(estimators)))
 
                     train_est, test_est = estimators
                     self.train_estimators[i] = train_est
@@ -76,7 +76,7 @@ class DeepEnsemble(object):
         output = [None] * num_outputs
 
         for out_idx in range(num_outputs):
-            output[out_idx] = K.concatenate([e[out_idx] for e in ensemble_samples], axis=0)
+            output[out_idx] = ops.concatenate([e[out_idx] for e in ensemble_samples], axis=0)
 
         return output
 

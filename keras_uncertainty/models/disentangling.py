@@ -1,6 +1,7 @@
 import numpy as np
 
-import keras_uncertainty.backend as K
+import keras
+
 from keras_uncertainty.models import TwoHeadStochasticRegressor
 
 def softmax(x, axis=-1):
@@ -42,3 +43,7 @@ class DisentangledStochasticClassifier(TwoHeadStochasticRegressor):
         y_probs_ale = sampling_softmax(y_logits_mean, y_logits_std_ale, num_samples=self.ale_num_samples)
 
         return y_probs, y_probs_ale, y_probs_epi
+
+class DisentangledEnsembleClassifier:
+    def __init__(self):
+        pass

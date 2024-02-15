@@ -1,7 +1,9 @@
 import numpy as np
 
 from keras_uncertainty.utils import predict_batches
-import keras_uncertainty.backend as K
+import keras
+from keras import ops
+from keras.models import Model
 
 AGGREGATION_FNS = {
     "min": np.min,
@@ -29,9 +31,9 @@ class GradientClassificationConfidence:
         self.agg_fn = AGGREGATION_FNS[self.aggregation]
 
         if loss is None:
-            self.loss = K.losses.get(model.loss)
+            self.loss = keras.losses.get(model.loss)
         else:
-            self.loss = K.losses.get(loss)
+            self.loss = keras.losses.get(loss)
 
         self.gradient_fn = self.compute_gradient_fn()
 
@@ -51,12 +53,12 @@ class GradientClassificationConfidence:
         else:
             num_classes = self.num_classes
 
-        pred = K.one_hot(K.argmax(self.model.output, axis=1), num_classes=num_classes)
+        pred = ops.one_hot(ops.argmax(self.model.output, axis=1), num_classes=num_classes)
         loss = self.loss(self.model.output, pred)
-        loss_grad = K.gradients(loss, self.model.trainable_weights)
-        loss_grad = [K.flatten(x) for x in loss_grad]
-        loss_grad = K.concatenate(loss_grad, axis=-1)
-        grad_fn = K.function([self.model.input], [loss_grad])
+        loss_grad = ops.gradients(loss, self.model.trainable_weights)
+        loss_grad = [ops.flatten(x) for x in loss_grad]
+        loss_grad = ops.concatenate(loss_grad, axis=-1)
+        grad_fn = Model([self.model.input], [loss_grad])
 
         return grad_fn
 

@@ -19,7 +19,7 @@ class DeepEnsembleRegressor(DeepEnsemble):
             prediction is made with a mixture of gaussians, where each gaussian is one trained model instance.
         """
         super().__init__(model_fn=model_fn, num_estimators=num_estimators, models=models,
-                         needs_test_estimators=True)
+                         needs_test_estimators=False)
 
     def fit(self, X, y, epochs=10, batch_size=32, **kwargs):
         """

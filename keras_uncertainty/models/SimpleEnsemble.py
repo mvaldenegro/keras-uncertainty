@@ -6,7 +6,8 @@ import yaml
 from pydoc import locate
 
 from .DeepEnsembleClassifier import DeepEnsemble
-import keras_uncertainty.backend as K
+import keras
+from keras import ops
 
 class SimpleEnsemble(DeepEnsemble):
     """
@@ -116,15 +117,15 @@ class SimpleEnsemble(DeepEnsemble):
             output_names = [x.name for x in estimators[0].outputs]
             for estimator in estimators:
                 prediction = estimator(inputs, **kwargs)
-                pred = [K.expand_dims(x, axis=0) for x in prediction]
+                pred = [ops.expand_dims(x, axis=0) for x in prediction]
                 predictions.append(pred)    
 
             predictions = self.divide_outputs_symbolic(predictions, self.num_outputs)
             outputs = []
 
             for i in range(self.num_outputs):
-                mean_pred = K.mean(predictions[i], axis=0)
-                std_pred = K.std(predictions[i], axis=0)
+                mean_pred = ops.mean(predictions[i], axis=0)
+                std_pred = ops.std(predictions[i], axis=0)
                 
                 outputs.append(mean_pred)
                 outputs.append(std_pred)
@@ -133,13 +134,13 @@ class SimpleEnsemble(DeepEnsemble):
 
         for estimator in estimators:
             prediction = estimator(inputs, **kwargs)
-            pred = K.expand_dims(prediction, axis=0)
+            pred = ops.expand_dims(prediction, axis=0)
             predictions.append(pred)
 
-        predictions = K.concatenate(predictions, axis=0)
+        predictions = ops.concatenate(predictions, axis=0)
 
-        mean_pred = K.mean(predictions, axis=0)
-        std_pred = K.std(predictions, axis=0)
+        mean_pred = ops.mean(predictions, axis=0)
+        std_pred = ops.std(predictions, axis=0)
 
         return mean_pred, std_pred
         

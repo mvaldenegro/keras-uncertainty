@@ -1,5 +1,7 @@
 import numpy as np
-import keras_uncertainty.backend as K
+
+import keras
+from keras import ops
 
 class StochasticModel:
     """
@@ -46,9 +48,6 @@ class StochasticModel:
 
         assert num_samples > 0
         samples = [None] * num_samples
-
-        if "verbose" not in kwargs:
-            kwargs["verbose"] = 0
 
         for i in range(num_samples):
             samples[i] = self.model(x, **kwargs)
@@ -115,12 +114,12 @@ class StochasticClassifier(StochasticModel):
             outputs = []
 
             for i in range(self.num_outputs):
-                mean_probs = K.mean(samples[i], axis=0)                
+                mean_probs = ops.mean(samples[i], axis=0)                
                 outputs.append(mean_probs)
 
             return outputs
 
-        mean_probs = K.mean(samples, axis=0)
+        mean_probs = ops.mean(samples, axis=0)
 
         return mean_probs
 
@@ -166,16 +165,16 @@ class StochasticRegressor(StochasticModel):
             outputs = []
 
             for i in range(self.num_outputs):
-                mean_pred = K.mean(samples[i], axis=0)
-                std_pred = K.std(samples[i], axis=0)
+                mean_pred = ops.mean(samples[i], axis=0)
+                std_pred = ops.std(samples[i], axis=0)
                 
                 outputs.append(mean_pred)
                 outputs.append(std_pred)
 
             return outputs
 
-        mean_pred = K.mean(samples, axis=0)
-        std_pred = K.std(samples, axis=0)
+        mean_pred = ops.mean(samples, axis=0)
+        std_pred = ops.std(samples, axis=0)
 
         return mean_pred, std_pred
 
@@ -228,6 +227,9 @@ class TwoHeadStochasticRegressor(StochasticModel):
             return mixture_mean, ale_std, epi_std
 
         return mixture_mean, mixture_std
+
+    def __call__(self, inputs, num_samples=None, **kwargs):
+        raise NotImplementedError()
 
 class KernelDensityStochasticModel(StochasticModel):
     def __init__(self, model, num_samples=10, bandwidth=1.0):
