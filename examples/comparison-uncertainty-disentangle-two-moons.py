@@ -1,12 +1,11 @@
 import numpy as np
 
-import keras
-from keras.models import Sequential, Model
-from keras.layers import Dense, Dropout, Input
-from keras.utils import to_categorical
+import keras_core
+from keras_core.models import Sequential, Model
+from keras_core.layers import Dense, Input
 
 import keras_uncertainty
-from keras_uncertainty.models import DeepEnsembleClassifier, StochasticClassifier
+from keras_uncertainty.models import DeepEnsembleClassifier
 from keras_uncertainty.models import DisentangledStochasticClassifier
 from keras_uncertainty.layers import StochasticDropout
 from keras_uncertainty.layers import DropConnectDense, VariationalDense, FlipoutDense, SamplingSoftmax

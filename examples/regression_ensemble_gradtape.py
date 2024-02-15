@@ -54,6 +54,10 @@ if __name__ == "__main__":
 
     num_batches = math.ceil(x_train.shape[0] / BATCH_SIZE)
 
+    inp = Input(shape=(1,))
+    foo = model(inp)
+    print(foo)
+
     for epoch in range(EPOCHS):
         t = trange(num_batches, desc='Epoch {} / {}'.format(epoch, EPOCHS))
         losses = []

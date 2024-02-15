@@ -6,15 +6,18 @@ from keras.models import Sequential, Model
 from keras.layers import Dense, Input
 
 import keras_uncertainty
-from keras_uncertainty.models import DeepEnsembleRegressor, StochasticRegressor, TwoHeadStochasticRegressor
+from keras_uncertainty.models import EnsembleRegressor, StochasticRegressor, TwoHeadStochasticRegressor, TwoHeadModel
 from keras_uncertainty.layers import DropConnectDense, VariationalDense, FlipoutDense, StochasticDropout
 from keras_uncertainty.metrics import gaussian_interval_score
 from keras_uncertainty.utils import regressor_calibration_error
 from keras_uncertainty.losses import regression_gaussian_nll_loss, regression_gaussian_beta_nll_loss
 
 from sklearn.datasets import make_moons
+from sklearn.preprocessing import MinMaxScaler
 
 import matplotlib.pyplot as plt
+
+keras.config.disable_traceback_filtering()
 
 def toy_function(input):
     output = []
@@ -34,13 +37,24 @@ def train_standard_model(x_train, y_train, domain):
     mean = Dense(1, activation="linear")(x)
     var = Dense(1, activation="softplus")(x)
 
-    train_model = Model(inp, mean)
-    pred_model = Model(inp, [mean, var])
+    model = TwoHeadModel(inp, [mean, var])
 
-    train_model.compile(loss=regression_gaussian_nll_loss(var), optimizer="adam")
-    train_model.fit(x_train, y_train, verbose=2, epochs=100)
+    model.compile(loss=regression_gaussian_nll_loss(), optimizer="adam")
 
-    mean_pred, var_pred = pred_model.predict(domain)
+
+    x_scaler = MinMaxScaler()
+    y_scaler = MinMaxScaler()
+
+    x_train = x_scaler.fit_transform(x_train.reshape(-1, 1))
+    y_train = y_scaler.fit_transform(y_train.reshape(-1, 1))
+    domain = x_scaler.transform(domain)
+
+    model.fit(x_train, y_train, verbose=2, epochs=500)
+
+    mean_pred, var_pred = model.predict(domain)
+    mean_pred = y_scaler.inverse_transform(mean_pred)
+    var_pred = (1.0 / (y_scaler.scale_ * y_scaler.scale_)) * var_pred
+
     std_pred = np.sqrt(var_pred)
 
     return mean_pred, std_pred
@@ -83,16 +97,13 @@ def train_ensemble_model(x_train, y_train, domain):
         x = Dense(32, activation="relu")(inp)
         x = Dense(32, activation="relu")(x)
         mean = Dense(1, activation="linear")(x)
-        var = Dense(1, activation="softplus")(x)
 
-        train_model = Model(inp, mean)
-        pred_model = Model(inp, [mean, var])
+        model = Model(inp, mean)
+        model.compile(loss="mse", optimizer="adam")
 
-        train_model.compile(loss=regression_gaussian_nll_loss(var), optimizer="adam")
-
-        return train_model, pred_model
+        return model
     
-    model = DeepEnsembleRegressor(model_fn, num_estimators=10)
+    model = EnsembleRegressor(model_fn, num_estimators=10)
     model.fit(x_train, y_train, verbose=2, epochs=100)
     pred_mean, pred_std = model.predict(domain)
 
@@ -108,9 +119,9 @@ def train_bayesbackprop_model(x_train, y_train, domain):
     }
 
     model = Sequential()
-    model.add(VariationalDense(32, kl_weight, **prior_params, prior=True, activation="relu", input_shape=(1,)))
-    model.add(VariationalDense(32, kl_weight, **prior_params, prior=True, activation="relu"))
-    model.add(VariationalDense(1, kl_weight, **prior_params, prior=True, activation="linear"))
+    model.add(VariationalDense(32, kl_weight, **prior_params, activation="relu", input_shape=(1,)))
+    model.add(VariationalDense(32, kl_weight, **prior_params, activation="relu"))
+    model.add(VariationalDense(1, kl_weight, **prior_params, activation="linear"))
 
     model.compile(loss="mean_squared_error", optimizer="adam")
 
@@ -131,16 +142,16 @@ def train_flipout_model(x_train, y_train, domain):
     }
 
     model = Sequential()
-    model.add(FlipoutDense(32, kl_weight, **prior_params, prior=False, bias_distribution=True, activation="relu", input_shape=(1,)))
-    model.add(FlipoutDense(32, kl_weight, **prior_params, prior=False, bias_distribution=True, activation="relu"))
-    model.add(FlipoutDense(1, kl_weight, **prior_params, prior=False, bias_distribution=True, activation="linear"))
+    model.add(FlipoutDense(32, kl_weight, **prior_params,bias_distribution=True, activation="relu", input_shape=(1,)))
+    model.add(FlipoutDense(32, kl_weight, **prior_params, bias_distribution=True, activation="relu"))
+    model.add(FlipoutDense(1, kl_weight, **prior_params, bias_distribution=True, activation="linear"))
 
     model.compile(loss="mean_squared_error", optimizer="adam")
 
     model.fit(x_train, y_train, verbose=2, epochs=700)
     
     st_model = StochasticRegressor(model)
-    pred_mean, pred_std = st_model.predict(domain, num_samples=50)
+    pred_mean, pred_std = st_model.predict(domain, num_samples=100)
 
     return pred_mean, pred_std
 
@@ -193,8 +204,8 @@ METHODS = {
     "DropConnect": train_dropconnect_model,
     "5 Ensembles": train_ensemble_model,
     "Flipout": train_flipout_model,
-    "Flipout + NLL": train_flipout_nll_model,
-    "Flipout + Beta-NLL": train_flipout_beta_nll_model
+    #"Flipout + NLL": train_flipout_nll_model,
+    #"Flipout + Beta-NLL": train_flipout_beta_nll_model
 }
 
 NUM_SAMPLES = 30
@@ -202,6 +213,8 @@ NUM_SAMPLES = 30
 if __name__ == "__main__":
     fig, axes = plt.subplots(nrows=1, ncols=len(METHODS.keys()), figsize=(20, 3))
     methods = list(METHODS.keys())
+
+    #TODO NORMALIZE ins/outs    
 
     x_train = np.linspace(-4.0, 4.0, num=1200)
     x_test = np.linspace(-7.0, 7.0, num=200)

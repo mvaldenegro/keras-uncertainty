@@ -15,6 +15,8 @@ from sklearn.datasets import make_moons
 
 import matplotlib.pyplot as plt
 
+keras.config.disable_traceback_filtering()
+
 def uncertainty(probs):
     return numpy_entropy(probs, axis=-1)
 
@@ -95,9 +97,9 @@ def train_bayesbackprop_model(x_train, y_train, domain):
     }
 
     model = Sequential()
-    model.add(VariationalDense(32, kl_weight, **prior_params, prior=False, activation="relu", input_shape=(2,)))
-    model.add(VariationalDense(32, kl_weight, **prior_params, prior=False, activation="relu"))
-    model.add(VariationalDense(2, kl_weight, **prior_params, prior=False, activation="softmax"))
+    model.add(VariationalDense(32, kl_weight, **prior_params, activation="relu", input_shape=(2,)))
+    model.add(VariationalDense(32, kl_weight, **prior_params, activation="relu"))
+    model.add(VariationalDense(2, kl_weight, **prior_params, activation="softmax"))
 
     model.compile(loss="sparse_categorical_crossentropy", optimizer="adam", metrics=["accuracy", "sparse_categorical_crossentropy"])
 
@@ -119,9 +121,9 @@ def train_flipout_model(x_train, y_train, domain):
     }
 
     model = Sequential()
-    model.add(FlipoutDense(32, kl_weight, **prior_params, prior=False, bias_distribution=False, activation="relu", input_shape=(2,)))
-    model.add(FlipoutDense(32, kl_weight, **prior_params, prior=False, bias_distribution=False, activation="relu"))
-    model.add(FlipoutDense(2, kl_weight, **prior_params, prior=False, bias_distribution=False, activation="softmax"))
+    model.add(FlipoutDense(32, kl_weight, **prior_params, bias_distribution=False, activation="relu", input_shape=(2,)))
+    model.add(FlipoutDense(32, kl_weight, **prior_params, bias_distribution=False, activation="relu"))
+    model.add(FlipoutDense(2, kl_weight, **prior_params, bias_distribution=False, activation="softmax"))
 
     model.compile(loss="sparse_categorical_crossentropy", optimizer="adam", metrics=["accuracy", "sparse_categorical_crossentropy"])
 
@@ -140,7 +142,7 @@ def train_duq_model(x_train, y_train, domain):
     model.add(RBFClassifier(2, 0.1, centroid_dims=2, trainable_centroids=True))
 
     model.compile(loss="binary_crossentropy", optimizer="adam", metrics=["accuracy"])
-    add_gradient_penalty(model, lambda_coeff=0.5)
+    #add_gradient_penalty(model, lambda_coeff=0.5)
     add_l2_regularization(model)
 
     y_train = to_categorical(y_train, num_classes=2)
@@ -175,7 +177,7 @@ METHODS = {
     "5 Ensembles": train_ensemble_model,
     "Flipout": train_flipout_model,
     "DUQ": train_duq_model,
-    "Gradient L1": train_gradient_model
+    #"Gradient L1": train_gradient_model
 }
 
 NUM_SAMPLES = 30

@@ -203,9 +203,9 @@ METHODS = {
     "Dropout": train_dropout_model,
     "DropConnect": train_dropconnect_model,
     "5 Ensembles": train_ensemble_model,
-    "Flipout": train_flipout_model,
+    #"Flipout": train_flipout_model,
     "Flipout + NLL": train_flipout_nll_model,
-    "Flipout + Beta-NLL": train_flipout_beta_nll_model
+    #"Flipout + Beta-NLL": train_flipout_beta_nll_model
 }
 
 NUM_SAMPLES = 30
