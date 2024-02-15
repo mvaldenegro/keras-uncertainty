@@ -1,10 +1,10 @@
 import numpy as np
-import keras_uncertainty.backend as K
-Layer = K.layers.Layer
-activations = K.activations
-initializers = K.initializers
 
 from keras_uncertainty.distributions import gaussian, rademacher
+
+import keras
+from keras.layers import Layer
+from keras import activations, initializers, ops, random
 
 # Code partially based on http://krasserm.github.io/2019/03/14/bayesian-neural-networks/
 
@@ -33,40 +33,40 @@ class FlipoutDense(Layer):
         super().__init__(**kwargs)
 
     def compute_output_shape(self, input_shape):
-        return [(None, self.units)]
+        return (None, self.units)
 
     def build(self, input_shape):
         feature_dims = input_shape[-1]
         self.kernel_mu = self.add_weight(name='kernel_mu',
                                          shape=(feature_dims, self.units),
-                                         initializer=initializers.normal(stddev=self.initializer_sigma),
+                                         initializer=initializers.random_normal(stddev=self.initializer_sigma),
                                          trainable=True)
         
         # -3.0 is an approximation for 0.0 with softplus, softplus(-3.0) ~ 0.0
         self.kernel_rho = self.add_weight(name='kernel_rho',
                                           shape=(feature_dims, self.units),
-                                          initializer=initializers.normal(mean=-3.0, stddev=self.initializer_sigma),
+                                          initializer=initializers.random_normal(mean=-3.0, stddev=self.initializer_sigma),
                                           trainable=True)
 
         self.bias_mu = self.add_weight(name='bias_mu',
                                        shape=(self.units,),
-                                       initializer=initializers.normal(stddev=self.initializer_sigma),
+                                       initializer=initializers.random_normal(stddev=self.initializer_sigma),
                                        trainable=True)
 
         self.bias_rho = self.add_weight(name='bias_rho',
                                         shape=(self.units,),
-                                        initializer=initializers.normal(mean=-3.0, stddev=self.initializer_sigma),
+                                        initializer=initializers.random_normal(mean=-3.0, stddev=self.initializer_sigma),
                                         trainable=self.bias_distribution)
         super().build(input_shape)
 
     def call(self, inputs, **kwargs):
-        kernel_sigma = K.softplus(self.kernel_rho)
-        kernel_perturb = kernel_sigma * K.random_normal(self.kernel_mu.shape)
+        kernel_sigma = ops.softplus(self.kernel_rho)
+        kernel_perturb = kernel_sigma * random.normal(self.kernel_mu.shape)
         kernel = self.kernel_mu + kernel_perturb
 
         if self.bias_distribution:
-            bias_sigma = K.softplus(self.bias_rho)
-            bias = self.bias_mu + bias_sigma * K.random_normal(self.bias_mu.shape)
+            bias_sigma = ops.softplus(self.bias_rho)
+            bias = self.bias_mu + bias_sigma * random.normal(self.bias_mu.shape)
         else:
             bias = self.bias_mu
 
@@ -75,15 +75,16 @@ class FlipoutDense(Layer):
         if self.bias_distribution:
             loss += self.kl_loss(bias, self.bias_mu, bias_sigma)
 
-        self.add_loss(K.in_train_phase(loss, 0.0))
+        self.add_loss(loss)
 
-        input_shape = K.shape(inputs)
-        batch_shape = input_shape[:-1]
+        input_shape = ops.shape(inputs)
+        batch_shape = input_shape[:-1][0]
         sign_input = rademacher.sample(input_shape)
-        sign_output = rademacher.sample(K.concatenate([batch_shape, K.expand_dims(self.units, 0)], axis=0))
-        perturbed_inputs = K.dot(inputs * sign_input, kernel_perturb) * sign_output
+        #sign_output = rademacher.sample(ops.stack([batch_shape, ops.expand_dims(self.units, 0)], axis=0))
+        sign_output = rademacher.sample([batch_shape, self.units])
+        perturbed_inputs = ops.dot(inputs * sign_input, kernel_perturb) * sign_output
 
-        outputs = K.dot(inputs, self.kernel_mu)
+        outputs = ops.dot(inputs, self.kernel_mu)
         outputs += perturbed_inputs
         outputs += bias
 
@@ -91,11 +92,11 @@ class FlipoutDense(Layer):
         return self.activation(outputs)
 
     def kl_loss(self, w, mu, sigma):
-        return self.kl_weight * K.mean(gaussian.log_probability(w, mu, sigma) - self.log_prior_prob(w))
+        return self.kl_weight * ops.mean(gaussian.log_probability(w, mu, sigma) - self.log_prior_prob(w))
 
     def log_prior_prob(self, w):
-        return K.log(self.prior_pi_1 * gaussian.probability(w, 0.0, self.prior_sigma_1) +
-                     self.prior_pi_2 * gaussian.probability(w, 0.0, self.prior_sigma_2))
+        return ops.log(self.prior_pi_1 * gaussian.probability(w, 0.0, self.prior_sigma_1) +
+                       self.prior_pi_2 * gaussian.probability(w, 0.0, self.prior_sigma_2))
 
     def get_config(self):
         config = {'units': self.units,
@@ -121,12 +122,12 @@ class FlipoutConvND(VariationalConvND):
         loss = self.kl_loss(kernel, self.kernel_distribution)
         self.add_loss(loss)
     
-        input_shape = K.shape(inputs)
+        input_shape = ops.shape(inputs)
         batch_shape = input_shape[:-1]
         sign_input = rademacher.sample(input_shape)
         
         perturbed_inputs = self.conv(inputs * sign_input, kernel_perturb)
-        sign_output = rademacher.sample(K.shape(perturbed_inputs))
+        sign_output = rademacher.sample(ops.shape(perturbed_inputs))
         perturbed_inputs = perturbed_inputs * sign_output
 
         outputs = self.conv(inputs, kernel)

@@ -1,6 +1,6 @@
-import keras_uncertainty.backend as K
-Layer = K.layers.Layer
-Dropout = K.layers.Dropout
+import keras
+from keras.layers import Layer, Dropout
+from keras import ops, random
 
 class SamplingSoftmax(Layer):
     """
@@ -32,10 +32,10 @@ class SamplingSoftmax(Layer):
 
     def preprocess_variance_input(self, var_input):
         if self.variance_type is "logit":
-            return K.exp(var_input)
+            return ops.exp(var_input)
 
         if self.variance_type is "linear_variance":
-            return K.sqrt(var_input)
+            return ops.sqrt(var_input)
         
         return var_input
 
@@ -44,27 +44,27 @@ class SamplingSoftmax(Layer):
 
         logit_mean, logit_var = inputs
         logit_std = self.preprocess_variance_input(logit_var)
-        logit_shape = (K.shape(logit_mean)[0], self.num_samples, K.shape(logit_mean)[-1])
+        logit_shape = (ops.shape(logit_mean)[0], self.num_samples, ops.shape(logit_mean)[-1])
 
-        logit_mean = K.expand_dims(logit_mean, axis=1)
-        logit_mean = K.repeat_elements(logit_mean, self.num_samples, axis=1)
+        logit_mean = ops.expand_dims(logit_mean, axis=1)
+        logit_mean = ops.repeat(logit_mean, self.num_samples, axis=1)
 
-        logit_std = K.expand_dims(logit_std, axis=1)
-        logit_std = K.repeat_elements(logit_std, self.num_samples, axis=1)
+        logit_std = ops.expand_dims(logit_std, axis=1)
+        logit_std = ops.repeat(logit_std, self.num_samples, axis=1)
 
-        logit_samples = K.random_normal(logit_shape, mean=logit_mean, stddev=logit_std)
+        logit_samples = random.normal(logit_shape, mean=logit_mean, stddev=logit_std)
         
         # Apply max normalization for numerical stability
-        logit_samples = logit_samples - K.max(logit_samples, axis=-1, keepdims=True)
+        logit_samples = logit_samples - ops.max(logit_samples, axis=-1, keepdims=True)
 
         # Apply temperature scaling to logits
         logit_samples = logit_samples / self.temperature
 
-        prob_samples = K.softmax(logit_samples, axis=-1)
-        probs = K.mean(prob_samples, axis=1)
+        prob_samples = ops.softmax(logit_samples, axis=-1)
+        probs = ops.mean(prob_samples, axis=1)
 
         # This is required due to approximation error, without it probabilities can sum to 1.01 or 0.99
-        probs = probs / K.sum(probs, axis=-1, keepdims=True)
+        probs = probs / ops.sum(probs, axis=-1, keepdims=True)
 
         return probs
 
@@ -74,6 +74,13 @@ class SamplingSoftmax(Layer):
                   'variance_type': self.variance_type}
         base_config = super(SamplingSoftmax, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+# TODO
+class SamplingSigmoid:
+    pass
+
+class SamplingLambda:
+    pass
 
 class StochasticDropout(Dropout):
     """
@@ -88,8 +95,6 @@ class StochasticDropout(Dropout):
     
     def call(self, inputs, training=None):
         if 0. < self.rate < 1.:
-            noise_shape = self._get_noise_shape(inputs)
-
-            return K.dropout(inputs, self.rate, noise_shape, seed=self.seed)
+            return random.dropout(inputs, self.rate, noise_shape=self.noise_shape, seed=self.seed)
 
         return inputs

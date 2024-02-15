@@ -1,12 +1,11 @@
 import numpy as np
 
-import keras_uncertainty.backend as K
-Layer = K.layers.Layer
-activations = K.activations
-initializers = K.initializers
-conv_utils = K.conv_utils
-
 from keras_uncertainty.distributions import gaussian
+from keras_uncertainty.utils import conv_utils
+
+import keras
+from keras import activations, initializers, random, ops
+from keras.layers import Layer
 
 # Code partially based on http://krasserm.github.io/2019/03/14/bayesian-neural-networks/
 
@@ -51,42 +50,42 @@ class VariationalDense(Layer):
         feature_dims = input_shape[-1]
         self.kernel_mu = self.add_weight(name='kernel_mu',
                                          shape=(feature_dims, self.units),
-                                         initializer=initializers.normal(stddev=self.initializer_sigma),
+                                         initializer=initializers.random_normal(stddev=self.initializer_sigma),
                                          trainable=True)
         self.bias_mu = self.add_weight(name='bias_mu',
                                        shape=(self.units,),
-                                       initializer=initializers.normal(stddev=self.initializer_sigma),
+                                       initializer=initializers.random_normal(stddev=self.initializer_sigma),
                                        trainable=True)
         self.kernel_rho = self.add_weight(name='kernel_rho',
                                           shape=(feature_dims, self.units),
-                                          initializer=initializers.normal(mean=-3.0, stddev=self.initializer_sigma),
+                                          initializer=initializers.random_normal(mean=-3.0, stddev=self.initializer_sigma),
                                           trainable=True)
         self.bias_rho = self.add_weight(name='bias_rho',
                                         shape=(self.units,),
-                                        initializer=initializers.normal(mean=-3.0, stddev=self.initializer_sigma),
+                                        initializer=initializers.random_normal(mean=-3.0, stddev=self.initializer_sigma),
                                         trainable=self.bias_distribution)
         super().build(input_shape)
 
     def call(self, inputs, **kwargs):
-        kernel_sigma = K.softplus(self.kernel_rho)
-        kernel = self.kernel_mu + kernel_sigma * K.random_normal(self.kernel_mu.shape)
+        kernel_sigma = ops.softplus(self.kernel_rho)
+        kernel = self.kernel_mu + kernel_sigma * random.normal(self.kernel_mu.shape)
 
-        bias_sigma = K.softplus(self.bias_rho)
-        bias = self.bias_mu + bias_sigma * K.random_normal(self.bias_mu.shape)
+        bias_sigma = ops.softplus(self.bias_rho)
+        bias = self.bias_mu + bias_sigma * random.normal(self.bias_mu.shape)
 
         loss = self.kl_loss(kernel, self.kernel_mu, kernel_sigma) + self.kl_loss(bias, self.bias_mu, bias_sigma)
 
-        self.add_loss(K.in_train_phase(loss, 0.0))
+        self.add_loss(loss)
 
         # This always produces stochastic outputs
-        return self.activation(K.dot(inputs, kernel) + bias)
+        return self.activation(ops.dot(inputs, kernel) + bias)
 
     def kl_loss(self, w, mu, sigma):
-        return self.kl_weight * K.mean(gaussian.log_probability(w, mu, sigma) - self.log_prior_prob(w))
+        return self.kl_weight * ops.mean(gaussian.log_probability(w, mu, sigma) - self.log_prior_prob(w))
 
     def log_prior_prob(self, w):
-        return K.log(self.prior_pi_1 * gaussian.probability(w, 0.0, self.prior_sigma_1) +
-                     self.prior_pi_2 * gaussian.probability(w, 0.0, self.prior_sigma_2))
+        return ops.log(self.prior_pi_1 * gaussian.probability(w, 0.0, self.prior_sigma_1) +
+                       self.prior_pi_2 * gaussian.probability(w, 0.0, self.prior_sigma_2))
 
     def get_config(self):
         config = {'units': self.units,
@@ -154,20 +153,19 @@ class VariationalConv(Layer):
 
     def conv(self, inputs, kernel):
         conv_dict = {
-            1: K.conv1d,
-            2: K.conv2d,
-            3: K.conv3d
+            1: ops.conv,
+            2: ops.conv,
+            3: ops.conv
         }
 
         return conv_dict[self.rank](inputs, kernel, strides=self.strides, padding=self.padding, data_format="channels_last", dilation_rate=self.dilation_rate)
 
-    #def log_prior_prob(self, parameter, distribution):
-    #    return K.log(self.prior_pi_1 * gaussian.probability(w, 0.0, self.prior_sigma_1) +
-    #                 self.prior_pi_2 * gaussian.probability(w, 0.0, self.prior_sigma_2))
+    def log_prior_prob(self, parameter):
+        return ops.log(self.prior_pi_1 * gaussian.probability(parameter, 0.0, self.prior_sigma_1) +
+                     self.prior_pi_2 * gaussian.probability(parameter, 0.0, self.prior_sigma_2))
 
     def kl_loss(self, parameter, distribution):
-        return self.kl_weight * K.mean(distribution.log_probability(parameter))
-        #return self.kl_weight * K.mean(gaussian.log_probability(w, mu, sigma) - self.prior * self.log_prior_prob(w))
+        return self.kl_weight * ops.mean(distribution.log_probability(parameter)  - self.prior * self.log_prior_prob(parameter))
 
 from keras_uncertainty.distributions.gaussian import GaussianDistribution
 
@@ -181,7 +179,7 @@ class VariationalConvND(VariationalConv):
 
         mean = self.add_weight(name="kernel_mean", shape=kernel_shape, initializer="glorot_uniform")
         var = self.add_weight(name="kernel_var", shape=kernel_shape, initializer="glorot_uniform")
-        std = K.softplus(var)
+        std = ops.softplus(var)
 
         kernel_distribution = GaussianDistribution(mean, std, kernel_shape)
 
@@ -190,9 +188,9 @@ class VariationalConvND(VariationalConv):
 
         if use_bias_distribution:
             var = self.add_weight(name="bias_var", shape=bias_shape, initializer="glorot_uniform")
-            std = K.softplus(var)
+            std = ops.softplus(var)
         else:
-            std = K.zeros(bias_shape)
+            std = ops.zeros(bias_shape)
 
         bias_distribution = GaussianDistribution(mean, std, bias_shape)
 
@@ -211,9 +209,10 @@ class VariationalConvND(VariationalConv):
 
         if self.use_bias_distribution:
             loss = self.kl_loss(bias, self.bias_distribution)
+
             self.add_loss(loss)
 
-        return K.bias_add(inputs, bias, data_format="channels_last")
+        return ops.bias_add(inputs, bias, data_format="channels_last")
 
 class VariationalConv1D(VariationalConvND):
     def __init__(self, filters, kernel_size, kl_weight, strides=1, padding="valid", dilation_rate=1, activation="linear", **kwargs):

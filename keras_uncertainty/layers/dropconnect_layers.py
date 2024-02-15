@@ -1,9 +1,8 @@
-import keras_uncertainty.backend as K
+import keras
+from keras.layers import Layer, Dense
+from keras import activations, random, ops
 
-Dense = K.layers.Dense
-Layer = K.layers.Layer
-activations = K.activations
-conv_utils = K.conv_utils
+from keras_uncertainty.utils import conv_utils
 
 class DropConnect:
     def __init__(self, prob=0.5, drop_bias=False, noise_shape=None):
@@ -19,21 +18,15 @@ class DropConnect:
 
     def sample(self, tensor, dropit=True, noise_shape=None):
         if dropit:
-            return K.dropout(tensor, self.prob, noise_shape)
+            return random.dropout(tensor, self.prob, noise_shape)
 
         return tensor
-
-    def replace_tensor(self, tensor_train, tensor_test):
-        if self.uses_learning_phase:
-            return K.in_train_phase(tensor_train, tensor_test)
-        else:
-            return tensor_train
 
     def get_noise_shape(self, inputs):
         if self.noise_shape is None:
             return self.noise_shape
 
-        symbolic_shape = K.shape(inputs)
+        symbolic_shape = ops.shape(inputs)
         noise_shape = [symbolic_shape[axis] if shape is None else shape
                        for axis, shape in enumerate(self.noise_shape)]
 
@@ -60,7 +53,7 @@ class DropConnectDense(DropConnect, Dense):
         kernel_sample = self.sample(self.kernel)
         bias_sample = self.sample(self.bias, dropit=self.drop_bias)
 
-        outputs = K.dot(inputs, kernel_sample)
+        outputs = ops.dot(inputs, kernel_sample)
         
         if self.use_bias:
             outputs += bias_sample
@@ -111,9 +104,9 @@ class DropConnectConvND(DropConnect, Layer):
 
     def conv(self, inputs, kernel):
         conv_dict = {
-            1: K.conv1d,
-            2: K.conv2d,
-            3: K.conv3d
+            1: ops.conv,
+            2: ops.conv,
+            3: ops.conv
         }
 
         return conv_dict[self.rank](inputs, kernel, strides=self.strides, padding=self.padding, data_format="channels_last", dilation_rate=self.dilation_rate)
@@ -124,7 +117,7 @@ class DropConnectConvND(DropConnect, Layer):
 
         if self.use_bias:
             bias_sample = self.sample(self.bias, dropit=self.drop_bias)
-            output = K.bias_add(output, bias_sample, data_format="channels_last")
+            output = ops.bias_add(output, bias_sample, data_format="channels_last")
 
         if self.activation is not None:
             output = self.activation(output)

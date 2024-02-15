@@ -1,8 +1,9 @@
 import numpy as np
 
-import keras_uncertainty.backend as K
-Layer = K.layers.Layer
-l2 = K.regularizers.l2
+import keras
+from keras import ops
+from keras.layers import Layer
+from keras.regularizers import l2
 
 import tensorflow as tf
 from tqdm import trange
@@ -68,18 +69,17 @@ def duq_training_loop(model, input_feature_model, x_train, y_train, epochs=10, b
             print("Validation metrics: {}".format(desc))
 
 def add_gradient_penalty(model, lambda_coeff=0.5, penalty_type="two-sided"):
-    term = K.gradients(K.sum(model.output, axis=1), model.input)
-    term = K.square(term)
+    term = ops.gradients(ops.sum(model.output, axis=1), model.input)
+    term = ops.square(term)
 
     if penalty_type == "two-sided":
         penalty = (term - 1) ** 2
     elif penalty_type == "one-sided":
-        penalty = K.max(0, term - 1)
+        penalty = ops.max(0, term - 1)
     else:
         raise ValueError("Invalid penalty type {}, valid values are [one-sided, two-sided]".format(penalty_type))
 
-    penalty = lambda_coeff * penalty
-    penalty = K.in_train_phase(penalty, K.zeros(shape=(1,)))
+    penalty = lambda_coeff * penalty    
 
     model.add_loss(penalty)
 
@@ -123,20 +123,20 @@ class RBFClassifier(Layer):
         return [(None, self.num_classes)]
 
     def call(self, inputs, training=None):
-        z = K.einsum("ij,mnj->imn", inputs, self.kernels)
+        z = ops.einsum("ij,mnj->imn", inputs, self.kernels)
         out = self.rbf(z)
 
         return out
 
     def rbf(self, z):
         z = z - self.centroids
-        z = K.mean(K.square(z), axis=1) / (2.0 * self.length_scale ** 2)
-        z = K.exp(-z)
+        z = ops.mean(ops.square(z), axis=1) / (2.0 * self.length_scale ** 2)
+        z = ops.exp(-z)
 
         return z
     
     def update_centroids(self, inputs, targets):
-        kernels = K.get_value(self.kernels)
+        kernels = ops.get_value(self.kernels)
         z = np.einsum("ij,mnj->imn", inputs, kernels)
 
         # Here we assume that targets is one-hot encoded.
@@ -146,7 +146,7 @@ class RBFClassifier(Layer):
         self.n = self.n * self.gamma + (1 - self.gamma) * class_counts
         self.m = self.m * self.gamma + (1 - self.gamma) * centroids_sum
 
-        K.set_value(self.centroids, self.m / self.n)
+        ops.set_value(self.centroids, self.m / self.n)
 
     def get_config(self):
         cfg = Layer.get_config(self)
