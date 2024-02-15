@@ -1,18 +1,20 @@
 import numpy as np
 import math
 
-import keras_uncertainty.backend as K
+import keras
+from keras import random
+from keras import ops
 
 NegHalfLog2PI = -0.5 * math.log(2.0 * math.pi)
 InvSqrt2PI = 1.0 / (math.sqrt(2.0 * math.pi))
 
 def log_probability(x, mu, sigma):
-    return NegHalfLog2PI - K.log(sigma) - 0.5 * K.square((x - mu) / sigma)
+    return NegHalfLog2PI - ops.log(sigma) - 0.5 * ops.square((x - mu) / sigma)
 
 def probability(x, mu, sigma):
-    x= K.square((x - mu) / sigma)
+    x= ops.square((x - mu) / sigma)
 
-    return InvSqrt2PI * (1.0 / sigma) * K.exp(-0.5 * x)
+    return InvSqrt2PI * (1.0 / sigma) * ops.exp(-0.5 * x)
 
 class GaussianDistribution:
     def __init__(self, mean, std, shape):
@@ -21,10 +23,10 @@ class GaussianDistribution:
         self.shape = shape
 
     def sample(self):
-        return K.random_normal(self.shape, self.mean, self.std)
+        return random.normal(self.shape, self.mean, self.std)
 
     def sample_perturbation(self):
-        return K.random_normal(self.shape, K.zeros(self.shape), self.std)
+        return random.normal(self.shape, ops.zeros(self.shape), self.std)
 
     def log_probability(self, x):
-        return NegHalfLog2PI - K.log(self.std) - 0.5 * K.square((x - self.mean) / self.std)
+        return NegHalfLog2PI - ops.log(self.std) - 0.5 * ops.square((x - self.mean) / self.std)
