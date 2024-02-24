@@ -77,7 +77,7 @@ class DropConnectDense(DropConnect, Dense):
 class DropConnectConvND(DropConnect, Layer):
     def __init__(self, rank, filters, kernel_size, strides=1, padding="valid", dilation_rate=(1, 1, 1), activation="linear", prob=0.5, use_bias=True, drop_bias=False, noise_shape=None, **kwargs):
         DropConnect.__init__(self, prob=prob, drop_bias=drop_bias, noise_shape=noise_shape)
-        Layer.__init__(**kwargs)
+        Layer.__init__(self, **kwargs)
 
         self.rank = rank
         self.filters = filters
