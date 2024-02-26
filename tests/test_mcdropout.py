@@ -4,7 +4,7 @@ import numpy as np
 from keras.layers import Dense, Dropout
 from keras.models import Sequential
 
-from keras_uncertainty.models import MCDropoutClassifier, MCDropoutRegressor
+from keras_uncertainty.models import StochasticClassifier, StochasticRegressor
 
 def test_mcdropout_classifier():
     model = Sequential()
@@ -12,7 +12,7 @@ def test_mcdropout_classifier():
     model.add(Dropout(0.5))
     model.add(Dense(3, activation="softmax"))
 
-    mc_model = MCDropoutClassifier(model)
+    mc_model = StochasticClassifier(model)
 
     inp = np.array([[2]])
     probs = mc_model.predict(inp)[0]
@@ -30,7 +30,7 @@ def test_mcdropout_regressor():
     model.add(Dropout(0.5))
     model.add(Dense(1))
 
-    mc_model = MCDropoutRegressor(model)
+    mc_model = StochasticRegressor(model)
 
     inp = np.array([[2]])
     probs = mc_model.predict(inp)[0]

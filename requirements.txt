@@ -2,3 +2,6 @@ keras>=2.2.0
 numpy
 tqdm
 scipy
+pyyaml
+scikit-learn==1.1.3
+matplotlib
